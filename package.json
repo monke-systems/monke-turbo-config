@@ -1,0 +1,58 @@
+{
+  "name": "turbo-ts-config",
+  "description": "turbo-ts-config package",
+  "version": "0.9.0",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc --project tsconfig.build.json",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "jest --passWithNoTests -t",
+    "test:unit:debug": "node --inspect-brk -r ts-node/register node_modules/.bin/jest --runInBand -t",
+    "test:e2e": "jest --passWithNoTests --config tests/jest-e2e.json -t",
+    "test:e2e:debug": "node --inspect-brk -r ts-node/register node_modules/.bin/jest --runInBand --config tests/jest-e2e.json -t",
+    "lint": "eslint \"{src,tests}/**/*.ts\"",
+    "lint:fix": "eslint \"{src,tests}/**/*.ts\" --fix",
+    "prepare": "husky install",
+    "prepublishOnly": "npm run build",
+    "clean": "rm -rf lib",
+    "pre-commit": "lint-staged"
+  },
+  "devDependencies": {
+    "@turbo/eslint-config": "0.9.8",
+    "@types/jest": "28.1.0",
+    "@types/node": "17.0.39",
+    "@typescript-eslint/eslint-plugin": "5.27.0",
+    "@typescript-eslint/parser": "5.27.0",
+    "eslint": "8.16.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "husky": "8.0.1",
+    "jest": "28.1.0",
+    "lint-staged": "12.4.1",
+    "ts-jest": "28.0.4",
+    "ts-node": "10.8.1",
+    "typescript": "4.7.3"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".spec.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  },
+  "lint-staged": {
+    "*.ts": "eslint"
+  }
+}
