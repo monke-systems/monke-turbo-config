@@ -1,3 +1,2 @@
-export const zdorova = (): string => {
-  return 'zdorova';
-};
+export * from './config-compiler';
+export * from './decorators/decorators';

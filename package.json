@@ -8,7 +8,7 @@
     "lib"
   ],
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "ts-node src/index.spec.ts",
     "build": "tsc --project tsconfig.build.json",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "jest --passWithNoTests -t",
@@ -54,5 +54,10 @@
   },
   "lint-staged": {
     "*.ts": "eslint"
+  },
+  "dependencies": {
+    "class-transformer": "0.5.1",
+    "class-validator": "0.13.2",
+    "reflect-metadata": "0.1.13"
   }
 }
