@@ -1,4 +1,4 @@
-import { CommonTransformerErr } from '../errors';
+import { TurboConfigTransformerErr } from '../errors';
 import { arrayParse, booleanParse, floatParse, intParse } from './parsers';
 
 describe('Parsers spec', () => {
@@ -14,14 +14,20 @@ describe('Parsers spec', () => {
     });
 
     it('Should throw an error on invalid values', () => {
-      expect(() => intParse({}, true, 10)).toThrowError(CommonTransformerErr);
-      expect(() => intParse([], true, 10)).toThrowError(CommonTransformerErr);
-      expect(() => intParse(true, true, 10)).toThrowError(CommonTransformerErr);
+      expect(() => intParse({}, true, 10)).toThrowError(
+        TurboConfigTransformerErr,
+      );
+      expect(() => intParse([], true, 10)).toThrowError(
+        TurboConfigTransformerErr,
+      );
+      expect(() => intParse(true, true, 10)).toThrowError(
+        TurboConfigTransformerErr,
+      );
     });
 
     it('Should throw an error on NaN by default', () => {
       expect(() => intParse('aqwe', true, 10)).toThrowError(
-        CommonTransformerErr,
+        TurboConfigTransformerErr,
       );
     });
 
@@ -42,14 +48,20 @@ describe('Parsers spec', () => {
     });
 
     it('Should throw an error on invalid values', () => {
-      expect(() => intParse({}, true, 10)).toThrowError(CommonTransformerErr);
-      expect(() => intParse([], true, 10)).toThrowError(CommonTransformerErr);
-      expect(() => intParse(true, true, 10)).toThrowError(CommonTransformerErr);
+      expect(() => intParse({}, true, 10)).toThrowError(
+        TurboConfigTransformerErr,
+      );
+      expect(() => intParse([], true, 10)).toThrowError(
+        TurboConfigTransformerErr,
+      );
+      expect(() => intParse(true, true, 10)).toThrowError(
+        TurboConfigTransformerErr,
+      );
     });
 
     it('Should throw an error on NaN by default', () => {
       expect(() => floatParse('zxcqw', true)).toThrowError(
-        CommonTransformerErr,
+        TurboConfigTransformerErr,
       );
     });
 
@@ -77,7 +89,7 @@ describe('Parsers spec', () => {
 
     it('Should throw an error on invalid value by default', () => {
       expect(() => booleanParse('zxcqw', true)).toThrowError(
-        CommonTransformerErr,
+        TurboConfigTransformerErr,
       );
     });
 
@@ -103,8 +115,10 @@ describe('Parsers spec', () => {
     });
 
     it('Should throw an error on invalid values', () => {
-      expect(() => arrayParse({}, ',')).toThrowError(CommonTransformerErr);
-      expect(() => arrayParse(true, ',')).toThrowError(CommonTransformerErr);
+      expect(() => arrayParse({}, ',')).toThrowError(TurboConfigTransformerErr);
+      expect(() => arrayParse(true, ',')).toThrowError(
+        TurboConfigTransformerErr,
+      );
     });
   });
 });

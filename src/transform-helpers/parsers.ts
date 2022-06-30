@@ -1,5 +1,5 @@
 import * as util from 'util';
-import { CommonTransformerErr } from '../errors';
+import { TurboConfigTransformerErr } from '../errors';
 
 export const intParse = (
   value: unknown,
@@ -14,14 +14,14 @@ export const intParse = (
     const parsed = parseInt(value, radix);
 
     if (throwOnNaN && Number.isNaN(parsed)) {
-      throw new CommonTransformerErr(
+      throw new TurboConfigTransformerErr(
         `int parse error - value '${value}' parsed into NaN`,
       );
     }
     return parsed;
   }
 
-  throw new CommonTransformerErr(
+  throw new TurboConfigTransformerErr(
     `int parse error - cannot parse '${util.format(value)}' to int`,
   );
 };
@@ -35,7 +35,7 @@ export const floatParse = (value: unknown, throwOnNaN: boolean): number => {
     const parsed = parseFloat(value);
 
     if (throwOnNaN && Number.isNaN(parsed)) {
-      throw new CommonTransformerErr(
+      throw new TurboConfigTransformerErr(
         `float parse error - value '${value}' parsed into NaN`,
       );
     }
@@ -43,7 +43,7 @@ export const floatParse = (value: unknown, throwOnNaN: boolean): number => {
     return parsed;
   }
 
-  throw new CommonTransformerErr(
+  throw new TurboConfigTransformerErr(
     `float parse error - cannot parse '${util.format(value)}' to float'`,
   );
 };
@@ -54,7 +54,7 @@ export const booleanParse = (
 ): boolean => {
   if (throwOnBadValue) {
     if (typeof value !== 'boolean' && value !== 'true' && value !== 'false') {
-      throw new CommonTransformerErr(
+      throw new TurboConfigTransformerErr(
         `boolean parse error - '${value}' is not correct boolean value`,
       );
     }
@@ -77,7 +77,7 @@ export const arrayParse = (
     return splitted;
   }
 
-  throw new CommonTransformerErr(
+  throw new TurboConfigTransformerErr(
     `array parse error. value ${util.format(
       value,
     )} cannot be parsed into array`,

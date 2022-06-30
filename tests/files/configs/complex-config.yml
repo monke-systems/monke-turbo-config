@@ -1,0 +1,15 @@
+app:
+  port: 5000
+  host: localhost
+db:
+  mysql:
+    host: localhost
+    autoReconnect: true
+tasks:
+  - opa
+  - zhopa
+  - loh
+intsArray:
+  - 1
+  - 2
+  - 3
