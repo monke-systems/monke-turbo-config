@@ -7,6 +7,19 @@
   "files": [
     "lib"
   ],
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/monke-systems/monke-turbo-config"
+  },
+  "bugs": {
+    "url": "https://github.com/monke-systems/monke-turbo-config/issues"
+  },
+  "homepage": "https://github.com/monke-systems/monke-turbo-config/#readme",
   "scripts": {
     "start": "ts-node src/index-test.ts",
     "build": "tsc --project tsconfig.build.json",
@@ -21,6 +34,13 @@
     "prepublishOnly": "npm run build",
     "clean": "rm -rf lib",
     "pre-commit": "lint-staged"
+  },
+  "dependencies": {
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.13.2",
+    "deepmerge": "^4.2.2",
+    "reflect-metadata": "^0.1.13",
+    "yaml": "^2.1.1"
   },
   "devDependencies": {
     "@monkee/eslint-config": "0.9.15",
@@ -54,12 +74,5 @@
   },
   "lint-staged": {
     "*.ts": "eslint"
-  },
-  "dependencies": {
-    "class-transformer": "0.5.1",
-    "class-validator": "0.13.2",
-    "deepmerge": "4.2.2",
-    "reflect-metadata": "0.1.13",
-    "yaml": "2.1.1"
   }
 }
