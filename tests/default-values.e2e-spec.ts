@@ -1,9 +1,10 @@
-import { compileConfig, GenericKey } from '../src';
 import {
+  compileConfig,
+  GenericKey,
   ArrayOfIntsTransformer,
   ArrayOfStringsTransformer,
   IntTransformer,
-} from '../src/transform-helpers/common-transformers';
+} from '../src';
 import { setEnvs } from './utils/test-utils';
 
 describe('Default values (e2e)', () => {

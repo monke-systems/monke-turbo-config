@@ -8,7 +8,7 @@ on:
     types: [created]
 
 jobs:
-  lint:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,6 +17,7 @@ jobs:
           node-version: 16
       - run: npm i
       - run: npm run lint
+      - run: npm run test
 
   publish-npm:
     needs: lint
@@ -27,7 +28,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-      - run: npm ci
+      - run: npm i
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

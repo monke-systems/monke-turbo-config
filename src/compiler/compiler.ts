@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import { promisify } from 'util';
-import type { ClassConstructor } from 'class-transformer';
 import { plainToInstance } from 'class-transformer';
 import type { ValidationError } from 'class-validator';
 import { validateSync } from 'class-validator';
@@ -55,8 +54,8 @@ type ResolvedSources = {
   [key in CONFIG_SOURCE]: any;
 };
 
-const buildRawConfig = <T extends ClassConstructor<object>>(
-  target: T,
+const buildRawConfig = <T extends object>(
+  target: new () => T,
   sources: ResolvedSources,
   opts: CompileConfigOptions = {},
   nestedKeyPrefix = '',
@@ -124,8 +123,8 @@ const buildRawConfig = <T extends ClassConstructor<object>>(
   return rawConfig;
 };
 
-export const compileConfig = async <T extends ClassConstructor<object>>(
-  configClass: T,
+export const compileConfig = async <T extends object>(
+  configClass: new () => T,
   opts: CompileConfigOptions = {},
 ): Promise<CompileResult<T>> => {
   const mergedOpts = mergeOptionsWithDefault(opts);
@@ -153,7 +152,7 @@ export const compileConfig = async <T extends ClassConstructor<object>>(
 
   const instanceOfConfig = plainToInstance(configClass, rawConfig, {
     exposeDefaultValues: true,
-  }) as unknown as T;
+  });
 
   const errors = validateSync(
     instanceOfConfig,

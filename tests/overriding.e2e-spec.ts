@@ -1,10 +1,13 @@
-import { compileConfig, EnvKey, GenericKey, YamlKey } from '../src';
-import { CONFIG_SOURCE } from '../src/compiler/config-sources';
 import {
+  compileConfig,
+  EnvKey,
+  GenericKey,
+  YamlKey,
   ArrayOfStringsTransformer,
   BooleanTransformer,
   IntTransformer,
-} from '../src/transform-helpers/common-transformers';
+} from '../src';
+import { CONFIG_SOURCE } from '../src/compiler/config-sources';
 import { E2E_YAMLS, getE2EYamlPath, setEnvs } from './utils/test-utils';
 
 describe('Overriding (e2e)', () => {

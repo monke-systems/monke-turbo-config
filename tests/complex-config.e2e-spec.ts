@@ -1,12 +1,15 @@
 import { Type } from 'class-transformer';
 import { IsString, IsBoolean, ValidateNested, IsNumber } from 'class-validator';
-import { GenericKey, NestedKey, EnvKey, compileConfig } from '../src';
 import {
+  GenericKey,
+  NestedKey,
+  EnvKey,
+  compileConfig,
   BooleanTransformer,
   IntTransformer,
   ArrayOfStringsTransformer,
   ArrayOfIntsTransformer,
-} from '../src/transform-helpers/common-transformers';
+} from '../src';
 import { E2E_YAMLS, getE2EYamlPath, setEnvs } from './utils/test-utils';
 
 describe('Complex config positive scenario (e2e)', () => {

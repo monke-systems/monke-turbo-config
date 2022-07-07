@@ -1,6 +1,10 @@
 import { IsHexColor, IsNumber, Min, ValidationError } from 'class-validator';
-import { compileConfig, EnvKey, TurboConfigValidationErr } from '../src';
-import { IntTransformer } from '../src/transform-helpers/common-transformers';
+import {
+  compileConfig,
+  EnvKey,
+  TurboConfigValidationErr,
+  IntTransformer,
+} from '../src';
 import { setEnvs } from './utils/test-utils';
 
 describe('Validation spec (e2e)', () => {
