@@ -1,0 +1,4 @@
+db:
+  mysql:
+    host: notLocalhost
+    autoReconnect: false

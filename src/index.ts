@@ -1,3 +1,3 @@
-export const zdorova = (): string => {
-  return 'zdorova';
-};
+export * from './compiler/compiler';
+export * from './decorators/decorators';
+export * from './errors';
