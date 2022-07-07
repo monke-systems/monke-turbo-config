@@ -101,17 +101,17 @@ describe('Parsers spec', () => {
   describe('Array parser', () => {
     it('Should process already parsed value', () => {
       const res = arrayParse([1, 2, 3], ',');
-      expect(res).toEqual([1, 2, 3]);
+      expect(res).toStrictEqual([1, 2, 3]);
     });
 
     it('Should parse correct array string with default separator', () => {
       const res = arrayParse('o,p,a', ',');
-      expect(res).toEqual(['o', 'p', 'a']);
+      expect(res).toStrictEqual(['o', 'p', 'a']);
     });
 
     it('Should parse correct array string with custom separator', () => {
       const res = arrayParse('o|p|a', '|');
-      expect(res).toEqual(['o', 'p', 'a']);
+      expect(res).toStrictEqual(['o', 'p', 'a']);
     });
 
     it('Should throw an error on invalid values', () => {

@@ -7,17 +7,19 @@ import { validateSync } from 'class-validator';
 import * as deepMerge from 'deepmerge';
 import 'reflect-metadata';
 import * as YAML from 'yaml';
-import { CONFIG_SOURCE } from '../config-sources/config-sources';
 import {
   getPropertiesList,
-  getPropertyConfigKeysMap,
+  getPropertyCliKey,
+  getPropertyEnvKey,
   getPropertyGenericKey,
   getPropertyNestedKey,
+  getPropertyYamlKey,
 } from '../decorators/metadata';
-import { TurboConfigCompileError } from '../errors';
+import { TurboConfigValidationErr } from '../errors';
 import { getByKeyPath } from '../utils/get-by-key-path';
 import type { CompileConfigOptions } from './compiler-options';
 import { mergeOptionsWithDefault } from './compiler-options';
+import { CONFIG_SOURCE } from './config-sources';
 import { getConfigKeyByGenericKey } from './keys-convert';
 
 const readFile = promisify(fs.readFile);
@@ -35,9 +37,12 @@ const getValueBySourcePriority = (
   values: ValuesBySource,
   priority: CONFIG_SOURCE[],
 ): unknown => {
-  const latestDefined = priority.reverse().find((priority) => {
-    return values[priority] !== undefined;
-  });
+  const latestDefined = priority
+    .slice()
+    .reverse()
+    .find((priority) => {
+      return values[priority] !== undefined;
+    });
 
   if (latestDefined === undefined) {
     return undefined;
@@ -46,44 +51,13 @@ const getValueBySourcePriority = (
   return values[latestDefined];
 };
 
-type PropertiesMap = Record<
-  string,
-  {
-    [key in CONFIG_SOURCE]?: string;
-  }
->;
-
-export const buildPropertiesMap = (
-  target: ClassConstructor<object>,
-  opts: CompileConfigOptions = {},
-): PropertiesMap => {
-  // eslint-disable-next-line new-cap
-  const instance = new target();
-  const configProperties = getPropertiesList(instance);
-
-  const map: PropertiesMap = {};
-
-  for (const property of configProperties) {
-    if (
-      opts.disallowGenericKeys! &&
-      getPropertyGenericKey(instance, property) !== undefined
-    ) {
-      throw new TurboConfigCompileError(
-        `Found generic key on property '${property}'. Generic keys is disabled by compile options`,
-      );
-    }
-
-    const configKeysMap = getPropertyConfigKeysMap(instance, property);
-
-    map[property] = configKeysMap;
-  }
-
-  return map;
+type ResolvedSources = {
+  [key in CONFIG_SOURCE]: any;
 };
 
 const buildRawConfig = <T extends ClassConstructor<object>>(
   target: T,
-  yml: any,
+  sources: ResolvedSources,
   opts: CompileConfigOptions = {},
   nestedKeyPrefix = '',
 ) => {
@@ -93,49 +67,58 @@ const buildRawConfig = <T extends ClassConstructor<object>>(
 
   const rawConfig: Record<string, unknown> = {};
 
-  for (const key of configProperties) {
-    const nestedKey = getPropertyNestedKey(instance, key);
+  for (const propertyName of configProperties) {
+    const nestedKey = getPropertyNestedKey(instance, propertyName);
 
     if (nestedKey !== undefined) {
       const nested = buildRawConfig(
         nestedKey.configClass,
-        yml,
+        sources,
         opts,
         `${nestedKeyPrefix}.${nestedKey.key}`,
       );
-      rawConfig[key] = nested;
+      rawConfig[propertyName] = nested;
+      continue;
     }
 
-    const genericKey = getPropertyGenericKey(instance, key);
+    const genericKey = getPropertyGenericKey(instance, propertyName);
 
-    if (genericKey !== undefined) {
-      const envVal =
-        process.env[
-          getConfigKeyByGenericKey(
-            `${nestedKeyPrefix}.${genericKey}`,
-            CONFIG_SOURCE.ENV,
-          )
-        ];
-
-      const yamlVal = getByKeyPath(
-        yml,
-        getConfigKeyByGenericKey(
-          `${nestedKeyPrefix}.${genericKey}`,
-          CONFIG_SOURCE.YAML,
-        ),
+    const envKey =
+      getPropertyEnvKey(instance, propertyName) ??
+      getConfigKeyByGenericKey(
+        `${nestedKeyPrefix}.${genericKey}`,
+        CONFIG_SOURCE.ENV,
       );
 
-      const prioritizedValue = getValueBySourcePriority(
-        {
-          [CONFIG_SOURCE.ENV]: envVal,
-          [CONFIG_SOURCE.YAML]: yamlVal,
-          [CONFIG_SOURCE.CLI]: undefined,
-        },
-        opts.sourcesPriority!,
+    const yamlKey =
+      getPropertyYamlKey(instance, propertyName) ??
+      getConfigKeyByGenericKey(
+        `${nestedKeyPrefix}.${genericKey}`,
+        CONFIG_SOURCE.YAML,
       );
 
-      rawConfig[key] = prioritizedValue;
-    }
+    const cliKey =
+      getPropertyCliKey(instance, propertyName) ??
+      getConfigKeyByGenericKey(
+        `${nestedKeyPrefix}.${genericKey}`,
+        CONFIG_SOURCE.CLI,
+      );
+
+    const envVal = sources.env[envKey];
+    const yamlVal = getByKeyPath(sources.yaml, yamlKey);
+    // TODO: реализовать. Это заглушка
+    const cliVal = {}[cliKey];
+
+    const prioritizedValue = getValueBySourcePriority(
+      {
+        [CONFIG_SOURCE.ENV]: envVal,
+        [CONFIG_SOURCE.YAML]: yamlVal,
+        [CONFIG_SOURCE.CLI]: cliVal,
+      },
+      opts.sourcesPriority!,
+    );
+
+    rawConfig[propertyName] = prioritizedValue;
   }
 
   return rawConfig;
@@ -158,7 +141,15 @@ export const compileConfig = async <T extends ClassConstructor<object>>(
     return deepMerge(accum, value);
   }, {});
 
-  const rawConfig = buildRawConfig(configClass, mergedYaml, mergedOpts);
+  const rawConfig = buildRawConfig(
+    configClass,
+    {
+      yaml: mergedYaml,
+      env: process.env,
+      cli: {},
+    },
+    mergedOpts,
+  );
 
   const instanceOfConfig = plainToInstance(configClass, rawConfig, {
     exposeDefaultValues: true,
@@ -170,7 +161,7 @@ export const compileConfig = async <T extends ClassConstructor<object>>(
   );
 
   if (mergedOpts.throwOnValidatonError === true && errors.length !== 0) {
-    throw new TurboConfigCompileError(
+    throw new TurboConfigValidationErr(
       `\n${errors.map((e) => e.toString()).join('\n')}`,
     );
   }

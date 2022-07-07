@@ -1,5 +1,5 @@
-import { CONFIG_SOURCE } from '../config-sources/config-sources';
 import { TurboConfigUnknownErr } from '../errors';
+import { CONFIG_SOURCE } from './config-sources';
 
 const envConvert = (raw: string) => {
   return raw.toUpperCase().replace(/\./g, '_');

@@ -1,5 +1,5 @@
 {
-  "name": "turbo-ts-config",
+  "name": "@monkee/turbo-config",
   "description": "turbo-ts-config package",
   "version": "0.9.0",
   "main": "lib/index.js",
@@ -8,7 +8,7 @@
     "lib"
   ],
   "scripts": {
-    "start": "ts-node src/index.spec.ts",
+    "start": "ts-node src/index-test.ts",
     "build": "tsc --project tsconfig.build.json",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "jest --passWithNoTests -t",
@@ -23,7 +23,7 @@
     "pre-commit": "lint-staged"
   },
   "devDependencies": {
-    "@turbo/eslint-config": "0.9.8",
+    "@monkee/eslint-config": "0.9.15",
     "@types/jest": "28.1.0",
     "@types/node": "17.0.39",
     "@typescript-eslint/eslint-plugin": "5.27.0",

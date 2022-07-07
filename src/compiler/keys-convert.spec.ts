@@ -1,4 +1,4 @@
-import { CONFIG_SOURCE } from '../config-sources/config-sources';
+import { CONFIG_SOURCE } from './config-sources';
 import { getConfigKeyByGenericKey } from './keys-convert';
 
 describe('Keys convertions spec', () => {

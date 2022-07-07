@@ -1,6 +1,6 @@
 import type { ValidatorOptions } from 'class-validator';
 import * as deepMerge from 'deepmerge';
-import { CONFIG_SOURCE } from '../config-sources/config-sources';
+import { CONFIG_SOURCE } from './config-sources';
 
 export type CompileConfigOptions = {
   sourcesPriority?: CONFIG_SOURCE[];
@@ -23,5 +23,9 @@ export const defaultCompileConfigOpts: CompileConfigOptions = {
 export const mergeOptionsWithDefault = (
   options: CompileConfigOptions,
 ): CompileConfigOptions => {
-  return deepMerge(defaultCompileConfigOpts, options);
+  return deepMerge(defaultCompileConfigOpts, options, {
+    arrayMerge: (_, source) => {
+      return source;
+    },
+  });
 };

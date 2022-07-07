@@ -6,4 +6,4 @@ env:
   node: true
   jest: true
 extends:
-  - '@turbo/eslint-config/typescript'
+  - '@monkee/eslint-config/typescript'

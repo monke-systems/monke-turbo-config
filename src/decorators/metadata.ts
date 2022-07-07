@@ -1,6 +1,4 @@
 import type { ClassConstructor } from 'class-transformer';
-import { getConfigKeyByGenericKey } from '../compiler/keys-convert';
-import { CONFIG_SOURCE } from '../config-sources/config-sources';
 
 const turboConfigPropertiesSymbol = Symbol('turboConifgProperties');
 
@@ -49,54 +47,23 @@ export const getPropertyNestedKey = (
   return Reflect.getMetadata(nestedKeySymbol, target, propertyName);
 };
 
-export const getPropertyConfigKeysMap = (
+export const getPropertyEnvKey = (
   target: object,
   propertyName: string,
-): {
-  [key in CONFIG_SOURCE]: string | undefined;
-} => {
-  const base = {
-    [CONFIG_SOURCE.YAML]: Reflect.getMetadata(
-      yamlKeySymbol,
-      target,
-      propertyName,
-    ),
-    [CONFIG_SOURCE.ENV]: Reflect.getMetadata(
-      envKeySymbol,
-      target,
-      propertyName,
-    ),
-    [CONFIG_SOURCE.CLI]: Reflect.getMetadata(
-      cliKeySymbol,
-      target,
-      propertyName,
-    ),
-  };
+): string | undefined => {
+  return Reflect.getMetadata(envKeySymbol, target, propertyName);
+};
 
-  const genericKey = getPropertyGenericKey(target, propertyName);
+export const getPropertyYamlKey = (
+  target: object,
+  propertyName: string,
+): string | undefined => {
+  return Reflect.getMetadata(yamlKeySymbol, target, propertyName);
+};
 
-  if (genericKey !== undefined) {
-    const res = Object.entries(base).reduce<Record<string, string>>(
-      (accum, [key, value]) => {
-        if (value === undefined) {
-          accum[key] = getConfigKeyByGenericKey(
-            genericKey,
-            key as CONFIG_SOURCE,
-          );
-          return accum;
-        }
-
-        accum[key] = value;
-        return accum;
-      },
-      {},
-    );
-
-    console.log(res);
-
-    // @ts-expect-error asd
-    return res;
-  }
-
-  return base;
+export const getPropertyCliKey = (
+  target: object,
+  propertyName: string,
+): string | undefined => {
+  return Reflect.getMetadata(cliKeySymbol, target, propertyName);
 };
