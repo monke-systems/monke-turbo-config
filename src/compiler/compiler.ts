@@ -14,8 +14,9 @@ import {
   getPropertyNestedKey,
   getPropertyYamlKey,
 } from '../decorators/metadata';
-import { TurboConfigValidationErr } from '../errors';
+import { TurboConfigCompileError, TurboConfigValidationErr } from '../errors';
 import { getByKeyPath } from '../utils/get-by-key-path';
+import { isError } from '../utils/ts-type-guards';
 import type { CompileConfigOptions } from './compiler-options';
 import { mergeOptionsWithDefault } from './compiler-options';
 import { CONFIG_SOURCE } from './config-sources';
@@ -134,7 +135,16 @@ export const compileConfig = async <T extends object>(
     return YAML.parse(file);
   });
 
-  const yamls = await Promise.all(readTasks);
+  let yamls = [] as object[];
+  try {
+    yamls = await Promise.all(readTasks);
+  } catch (e) {
+    if (mergedOpts.throwIfYmlNotExist!) {
+      if (isError(e)) {
+        throw new TurboConfigCompileError(e.message);
+      }
+    }
+  }
 
   const mergedYaml = yamls.reduce((accum, value) => {
     return deepMerge(accum, value);
