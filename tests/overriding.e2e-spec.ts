@@ -73,7 +73,7 @@ describe('Overriding (e2e)', () => {
 
     setEnvs([
       ['DB_MYSQL_HOST', 'mysqlHostFromEnvs'],
-      ['DB_MYSQL_AUTORECONNECT', 'false'],
+      ['DB_MYSQL_AUTO_RECONNECT', 'false'],
     ]);
 
     const { config } = await compileConfig(Conf, {
