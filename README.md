@@ -178,6 +178,7 @@ const main = async () => {
   ymlFiles: [],
   disallowGenericKeys: false,
   throwOnValidatonError: true,
+  throwIfYmlNotExist: false,
   classValidatorOptions: {
     skipMissingProperties: false,
   },

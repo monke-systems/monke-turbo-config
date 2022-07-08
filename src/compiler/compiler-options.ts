@@ -7,12 +7,14 @@ export type CompileConfigOptions = {
   ymlFiles?: string[];
   throwOnValidatonError?: boolean;
   disallowGenericKeys?: boolean;
+  throwIfYmlNotExist?: boolean;
   classValidatorOptions?: ValidatorOptions;
 };
 
 export const defaultCompileConfigOpts: CompileConfigOptions = {
   sourcesPriority: [CONFIG_SOURCE.YAML, CONFIG_SOURCE.ENV, CONFIG_SOURCE.CLI],
   throwOnValidatonError: true,
+  throwIfYmlNotExist: false,
   ymlFiles: [],
   disallowGenericKeys: false,
   classValidatorOptions: {
