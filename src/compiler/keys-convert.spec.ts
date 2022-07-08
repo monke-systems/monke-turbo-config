@@ -11,6 +11,7 @@ describe('Keys convertions spec', () => {
         ['opa.zhopa', 'opa.zhopa'],
         ['OPA123_ZHOPA', 'OPA123_ZHOPA'],
         ['very.nested.key.very.very', 'very.nested.key.very.very'],
+        ['app.camelCaseTest', 'app.camelCaseTest'],
       ];
 
       for (const [input, output] of keys) {
@@ -30,6 +31,9 @@ describe('Keys convertions spec', () => {
         ['opa.zhopa', 'OPA_ZHOPA'],
         ['OPA123_2ZHOPA', 'OPA123_2ZHOPA'],
         ['very.nested.key.very.very', 'VERY_NESTED_KEY_VERY_VERY'],
+        ['app.camelCaseTest', 'APP_CAMEL_CASE_TEST'],
+        ['app.CUMelCasETest', 'APP_CUMEL_CAS_ETEST'],
+        ['app.124Cam456elcase', 'APP_124CAM456ELCASE'],
       ];
 
       for (const [input, output] of keys) {

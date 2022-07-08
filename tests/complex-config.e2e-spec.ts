@@ -56,6 +56,7 @@ describe('Complex config positive scenario (e2e)', () => {
     setEnvs([
       ['TASKS', 'one:two:three'],
       ['APP_PORT', '8989'],
+      ['DB_MYSQL_AUTO_RECONNECT', 'true'],
     ]);
 
     const { config } = await compileConfig(ComplexConfig, {
@@ -67,7 +68,7 @@ describe('Complex config positive scenario (e2e)', () => {
 
     const expected = new ComplexConfig();
     expected.dbMysql = new Nested();
-    expected.dbMysql.autoReconnect = false;
+    expected.dbMysql.autoReconnect = true;
     expected.dbMysql.host = 'notLocalhost';
     expected.appHost = 'localhost';
     expected.appPort = 8989;
