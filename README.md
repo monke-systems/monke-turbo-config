@@ -141,7 +141,7 @@ import {
   IntTransformer,
   NestedKey,
   BooleanTransformer,
-} from './index';
+} from '@monkee/turbo-config';
 
 class Nested {
   @GenericKey('port')
@@ -187,7 +187,31 @@ const main = async () => {
 
 ## NestJs usage
 
-WIP
+In general you need to register the config globally
+
+```typescript
+import { TurboConfigModule } from '@monkee/turbo-config';
+
+@Module({
+  imports: [
+    TurboConfigModule.forRootAsync(AppConfig),
+  ],
+})
+export class AppModule {}
+```
+
+There is also an option to register a scoped config
+
+```typescript
+import { TurboConfigModule } from '@monkee/turbo-config';
+
+@Module({
+  imports: [
+    TurboConfigModule.registerAsync(DatabaseConfig),
+  ],
+})
+export class DatabaseModule {}
+```
 
 ## Error handling
 
