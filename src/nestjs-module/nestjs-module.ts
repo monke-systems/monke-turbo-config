@@ -33,6 +33,7 @@ export class TurboConfigModule {
 
     return {
       module: TurboConfigModule,
+      exports: providers,
       providers,
       global,
     };
