@@ -6,6 +6,7 @@ import { validateSync } from 'class-validator';
 import * as deepMerge from 'deepmerge';
 import 'reflect-metadata';
 import * as YAML from 'yaml';
+import * as yargs from 'yargs-parser';
 import {
   getPropertiesList,
   getPropertyCliKey,
@@ -106,8 +107,7 @@ const buildRawConfig = <T extends object>(
 
     const envVal = sources.env[envKey];
     const yamlVal = getByKeyPath(sources.yaml, yamlKey);
-    // TODO: реализовать. Это заглушка
-    const cliVal = {}[cliKey];
+    const cliVal = getByKeyPath(sources.cli, cliKey);
 
     const prioritizedValue = getValueBySourcePriority(
       {
@@ -150,12 +150,14 @@ export const compileConfig = async <T extends object>(
     return deepMerge(accum, value);
   }, {});
 
+  const parsedArgs = yargs(process.argv.slice(2));
+
   const rawConfig = buildRawConfig(
     configClass,
     {
       yaml: mergedYaml,
       env: process.env,
-      cli: {},
+      cli: parsedArgs,
     },
     mergedOpts,
   );

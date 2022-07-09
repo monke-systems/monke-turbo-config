@@ -9,7 +9,7 @@ describe('NestJs module (e2e)', () => {
       appPort!: number;
     }
 
-    setEnvs([['APP_PORT', '3000']]);
+    setEnvs(['APP_PORT', '3000']);
 
     const { module, providers, exports, global } =
       await TurboConfigModule.forRootAsync(Conf);
@@ -35,7 +35,7 @@ describe('NestJs module (e2e)', () => {
       appPort!: number;
     }
 
-    setEnvs([['APP_PORT', '3000']]);
+    setEnvs(['APP_PORT', '3000']);
 
     const { module, providers, exports, global } =
       await TurboConfigModule.registerAsync(Conf);

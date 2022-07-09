@@ -17,7 +17,7 @@ describe('Validation spec (e2e)', () => {
       appPort!: number;
     }
 
-    setEnvs([['APP_PORT', '-125125']]);
+    setEnvs(['APP_PORT', '-125125']);
 
     await expect(compileConfig(Config)).rejects.toThrowError(
       TurboConfigValidationErr,
@@ -31,7 +31,7 @@ describe('Validation spec (e2e)', () => {
       color!: string;
     }
 
-    setEnvs([['COLOR', 'notHexColor']]);
+    setEnvs(['COLOR', 'notHexColor']);
 
     await expect(
       compileConfig(ColorConfig, {

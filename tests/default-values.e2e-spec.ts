@@ -23,7 +23,7 @@ describe('Default values (e2e)', () => {
       intsArr: number[] = [1, 2, 3];
     }
 
-    setEnvs([['TASKS', 'opa,zhopa,loh']]);
+    setEnvs(['TASKS', 'opa,zhopa,loh']);
 
     const { config } = await compileConfig(Conf);
 

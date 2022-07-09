@@ -9,8 +9,14 @@ import {
   IntTransformer,
   ArrayOfStringsTransformer,
   ArrayOfIntsTransformer,
+  CliKey,
 } from '../src';
-import { E2E_YAMLS, getE2EYamlPath, setEnvs } from './utils/test-utils';
+import {
+  E2E_YAMLS,
+  getE2EYamlPath,
+  setArgs,
+  setEnvs,
+} from './utils/test-utils';
 
 describe('Complex config positive scenario (e2e)', () => {
   it('Complex config', async () => {
@@ -51,13 +57,19 @@ describe('Complex config positive scenario (e2e)', () => {
       @ArrayOfIntsTransformer()
       @IsNumber({}, { each: true })
       intsArr!: number[];
+
+      @CliKey('some.arrayOfInts')
+      @ArrayOfIntsTransformer()
+      @IsNumber({}, { each: true })
+      arrFromArgs!: number[];
     }
 
-    setEnvs([
+    setEnvs(
       ['TASKS', 'one:two:three'],
       ['APP_PORT', '8989'],
       ['DB_MYSQL_AUTO_RECONNECT', 'true'],
-    ]);
+    );
+    setArgs('--some.arrayOfInts=1,6,10');
 
     const { config } = await compileConfig(ComplexConfig, {
       ymlFiles: [
@@ -74,6 +86,7 @@ describe('Complex config positive scenario (e2e)', () => {
     expected.appPort = 8989;
     expected.tasks = ['one', 'two', 'three'];
     expected.intsArr = [1, 2, 3];
+    expected.arrFromArgs = [1, 6, 10];
 
     expect(config).toStrictEqual(expected);
   });
