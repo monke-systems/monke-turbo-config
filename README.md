@@ -1,6 +1,6 @@
-[![npm version](https://badge.fury.io/js/@monkee%2Fturbo-config.svg)](https://badge.fury.io/js/@monkee%2Fturbo-config)
-
 # Turbo config
+
+[![npm version](https://badge.fury.io/js/@monkee%2Fturbo-config.svg)](https://badge.fury.io/js/@monkee%2Fturbo-config)
 
 Complete configuration solution for typescript codebases:
 
@@ -17,6 +17,7 @@ class AppConfig {
   host!: string;
 
   @GenericKey('services.manager.tasks')
+  @CliKey('servicesList')
   @ArrayOfStringsTransformer()
   @IsString({ each: true })
   tasks!: string[];
@@ -25,11 +26,12 @@ class AppConfig {
 
 # Main features
 
-1. **Yaml, env, cli** (WIP) config sources with priority configuration
+1. **Yaml, env, cli** config sources with priority configuration
 1. Typed, class-based
 1. Built on the top of the mature community driven libraries:
     * [class-validator](https://github.com/typestack/class-validator) as validation solution
     * [class-transformer](https://github.com/typestack/class-transformer) for type management
+    * [yargs-parser](https://github.com/yargs/yargs-parser) for cli source
 
 1. [NestJs module out the box](#nestjs-usage)
 1. Config documentation generator (WIP)
@@ -88,7 +90,7 @@ import {
   IntTransformer,
   ArrayOfStringsTransformer,
   compileConfig,
-} from './index';
+} from '@monkee/turbo-config';
 
 class AppConfig {
   // GenericKey it's a little magic that reduces the number of decorators.
