@@ -31,7 +31,7 @@ class AppConfig {
     * [class-validator](https://github.com/typestack/class-validator) as validation solution
     * [class-transformer](https://github.com/typestack/class-transformer) for type management
 
-1. [NestJs](https://nestjs.com/) module out the box (WIP)
+1. [NestJs module out the box](#nestjs-usage)
 1. Config documentation generator (WIP)
 1. Well configurable
 
