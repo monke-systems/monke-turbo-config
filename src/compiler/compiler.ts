@@ -4,7 +4,6 @@ import { plainToInstance } from 'class-transformer';
 import type { ValidationError } from 'class-validator';
 import { validateSync } from 'class-validator';
 import * as deepMerge from 'deepmerge';
-import 'reflect-metadata';
 import * as YAML from 'yaml';
 import * as yargs from 'yargs-parser';
 import {
@@ -29,8 +28,19 @@ type ValuesBySource = {
   [key in CONFIG_SOURCE]: unknown;
 };
 
+export type ConfigSchemaEntry = {
+  schema?: {
+    [key in CONFIG_SOURCE]: string;
+  };
+
+  children?: Record<string, ConfigSchemaEntry>;
+};
+
+export type ConfigSchema = Record<string, ConfigSchemaEntry>;
+
 export type CompileResult<T> = {
   config: T;
+  configSchema: ConfigSchema;
   validationErrors: ValidationError[];
 };
 
@@ -56,17 +66,23 @@ type ResolvedSources = {
   [key in CONFIG_SOURCE]: any;
 };
 
+type RawConfig = {
+  schema: ConfigSchema;
+  rawFields: Record<string, unknown>;
+};
+
 const buildRawConfig = <T extends object>(
   target: new () => T,
   sources: ResolvedSources,
   opts: CompileConfigOptions = {},
   nestedKeyPrefix = '',
-) => {
+): RawConfig => {
   // eslint-disable-next-line new-cap
   const instance = new target();
   const configProperties = getPropertiesList(instance);
 
   const rawConfig: Record<string, unknown> = {};
+  const configSchema: ConfigSchema = {};
 
   for (const propertyName of configProperties) {
     const nestedKey = getPropertyNestedKey(instance, propertyName);
@@ -78,7 +94,10 @@ const buildRawConfig = <T extends object>(
         opts,
         `${nestedKeyPrefix}.${nestedKey.key}`,
       );
-      rawConfig[propertyName] = nested;
+      rawConfig[propertyName] = nested.rawFields;
+      configSchema[propertyName] = {
+        children: nested.schema,
+      };
       continue;
     }
 
@@ -119,9 +138,16 @@ const buildRawConfig = <T extends object>(
     );
 
     rawConfig[propertyName] = prioritizedValue;
+    configSchema[propertyName] = {
+      schema: {
+        env: envKey,
+        yaml: yamlKey,
+        cli: cliKey,
+      },
+    };
   }
 
-  return rawConfig;
+  return { schema: configSchema, rawFields: rawConfig };
 };
 
 export const compileConfig = async <T extends object>(
@@ -152,7 +178,7 @@ export const compileConfig = async <T extends object>(
 
   const parsedArgs = yargs(process.argv.slice(2));
 
-  const rawConfig = buildRawConfig(
+  const { schema, rawFields } = buildRawConfig(
     configClass,
     {
       yaml: mergedYaml,
@@ -162,7 +188,9 @@ export const compileConfig = async <T extends object>(
     mergedOpts,
   );
 
-  const instanceOfConfig = plainToInstance(configClass, rawConfig, {
+  console.log(schema);
+
+  const instanceOfConfig = plainToInstance(configClass, rawFields, {
     exposeDefaultValues: true,
   });
 
@@ -180,5 +208,6 @@ export const compileConfig = async <T extends object>(
   return {
     config: instanceOfConfig,
     validationErrors: errors,
+    configSchema: schema,
   };
 };

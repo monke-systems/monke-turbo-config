@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/monke-systems/monke-turbo-config/#readme",
   "scripts": {
+    "start": "ts-node src/index2.ts",
     "build": "tsc --project tsconfig.build.json",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "jest --passWithNoTests -t",
