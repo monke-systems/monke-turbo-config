@@ -156,15 +156,15 @@ const main = async () => {
 import { compileConfig, ConfigField } from '@monkee/turbo-config';
 
 class Nested {
-  ConfigField()
+  @ConfigField()
   port = 3000;
 
-  ConfigField()
+  @ConfigField()
   autoReconnect = true;
 }
 
 class AppConfig {
-  ConfigField({ nested: true })
+  @ConfigField({ nested: true })
   nested!: Nested;
 }
 
