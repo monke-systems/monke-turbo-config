@@ -1,11 +1,11 @@
-import { compileConfig, ConfigField } from '../src';
+import { compileConfig, ConfigField, TurboConfigTransformerErr } from '../src';
 import { setEnvs } from './utils/test-utils';
 
 describe('Default values (e2e)', () => {
   it('Default values complex test', async () => {
     class Conf {
       @ConfigField({ genericKey: 'app.portWrong' })
-      appPort = 9999;
+      appPort: number = 9999;
 
       @ConfigField({ arrayOf: 'strings' })
       tasks: string[] = ['task5', 'task6'];
@@ -23,5 +23,21 @@ describe('Default values (e2e)', () => {
     expected.intsArr = [1, 2, 3];
 
     expect(config).toStrictEqual(expected);
+  });
+
+  it('Disable default values', async () => {
+    class Conf {
+      @ConfigField()
+      appPort: number = 9999;
+    }
+
+    const fn = () =>
+      compileConfig(Conf, {
+        classTransformerOptions: {
+          exposeDefaultValues: false,
+        },
+      });
+
+    await expect(fn()).rejects.toThrowError(TurboConfigTransformerErr);
   });
 });

@@ -10,7 +10,7 @@ class DbConfig {
   host!: string;
 
   @ConfigField()
-  port = 3306;
+  port: number = 3306;
 
   @ConfigField()
   autoReconnect = true;
@@ -109,7 +109,12 @@ class AppConfig {
   @ConfigField()
   @Min(0)
   @Max(65535)
-  appPort = 3000;
+  appPort: number = 3000;
+  /*
+    NOTE: due reflect-metadata limitation you should specity property type
+    with default value. Othervise library won't infer type and the magic won't work.
+    Use ignoreProperties flag with no-inferrable-types eslint rule if necessary
+  */
 
   /*
     There are some transforms and validations under the hood by default.
@@ -136,7 +141,7 @@ class AppConfig {
 
   // Array example
   @ConfigField({ arrayOf: 'ints' })
-  intsArray = [1, 2, 3];
+  intsArray: number[] = [1, 2, 3];
 }
 
 const main = async () => {

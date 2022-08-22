@@ -20,8 +20,8 @@ describe('Complex config positive scenario (e2e)', () => {
       @ConfigField({ nested: true, nestedKey: 'db.mysql' })
       dbMysql!: Nested;
 
-      @ConfigField({ genericKey: 'app.port' })
-      appPort!: number;
+      @ConfigField({ genericKey: 'app.port_mistake_use_default' })
+      appPort: number = 8989;
 
       @ConfigField({ genericKey: 'app.host' })
       appHost!: string;

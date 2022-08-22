@@ -1,3 +1,4 @@
+import type { ClassTransformOptions } from 'class-transformer';
 import type { ValidatorOptions } from 'class-validator';
 import * as deepMerge from 'deepmerge';
 import { CONFIG_SOURCE } from './config-sources';
@@ -8,6 +9,7 @@ export type CompileConfigOptions = {
   throwOnValidatonError?: boolean;
   throwIfYmlNotExist?: boolean;
   classValidatorOptions?: ValidatorOptions;
+  classTransformerOptions?: ClassTransformOptions;
 };
 
 export const defaultCompileConfigOpts: CompileConfigOptions = {
@@ -18,12 +20,16 @@ export const defaultCompileConfigOpts: CompileConfigOptions = {
   classValidatorOptions: {
     skipMissingProperties: false,
   },
+  classTransformerOptions: {
+    exposeDefaultValues: true,
+  },
 };
 
 export const mergeOptionsWithDefault = (
   options: CompileConfigOptions,
 ): CompileConfigOptions => {
   return deepMerge(defaultCompileConfigOpts, options, {
+    clone: true,
     arrayMerge: (_, source) => {
       return source;
     },

@@ -162,9 +162,11 @@ export const compileConfig = async <T extends object>(
     mergedOpts,
   );
 
-  const instanceOfConfig = plainToInstance(configClass, rawConfig, {
-    exposeDefaultValues: true,
-  });
+  const instanceOfConfig = plainToInstance(
+    configClass,
+    rawConfig,
+    mergedOpts.classTransformerOptions!,
+  );
 
   const errors = validateSync(
     instanceOfConfig,

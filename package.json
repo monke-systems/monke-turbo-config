@@ -44,7 +44,7 @@
     "yargs-parser": "^21.0.1"
   },
   "devDependencies": {
-    "@monkee/eslint-config": "0.9.15",
+    "@monkee/eslint-config": "0.9.16",
     "@nestjs/common": "8.4.7",
     "@types/jest": "28.1.0",
     "@types/node": "17.0.39",
