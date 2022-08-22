@@ -1,25 +1,16 @@
-import {
-  compileConfig,
-  GenericKey,
-  ArrayOfIntsTransformer,
-  ArrayOfStringsTransformer,
-  IntTransformer,
-} from '../src';
+import { compileConfig, ConfigField } from '../src';
 import { setEnvs } from './utils/test-utils';
 
 describe('Default values (e2e)', () => {
   it('Default values complex test', async () => {
     class Conf {
-      @GenericKey('app.portWrong')
-      @IntTransformer()
+      @ConfigField({ genericKey: 'app.portWrong' })
       appPort = 9999;
 
-      @GenericKey('tasks')
-      @ArrayOfStringsTransformer()
+      @ConfigField({ arrayOf: 'strings' })
       tasks: string[] = ['task5', 'task6'];
 
-      @GenericKey('wrong.key')
-      @ArrayOfIntsTransformer()
+      @ConfigField({ arrayOf: 'ints', genericKey: 'wrong.Key' })
       intsArr: number[] = [1, 2, 3];
     }
 

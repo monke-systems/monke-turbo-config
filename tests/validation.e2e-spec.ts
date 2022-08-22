@@ -1,17 +1,11 @@
 import { IsHexColor, IsNumber, Min, ValidationError } from 'class-validator';
-import {
-  compileConfig,
-  EnvKey,
-  TurboConfigValidationErr,
-  IntTransformer,
-} from '../src';
+import { compileConfig, ConfigField, TurboConfigValidationErr } from '../src';
 import { setEnvs } from './utils/test-utils';
 
 describe('Validation spec (e2e)', () => {
   it('Should throw validation error', async () => {
     class Config {
-      @EnvKey('APP_PORT')
-      @IntTransformer()
+      @ConfigField()
       @Min(1)
       @IsNumber()
       appPort!: number;
@@ -26,7 +20,7 @@ describe('Validation spec (e2e)', () => {
 
   it('Should not throw and return validation errors', async () => {
     class ColorConfig {
-      @EnvKey('COLOR')
+      @ConfigField()
       @IsHexColor()
       color!: string;
     }

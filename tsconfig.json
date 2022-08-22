@@ -9,6 +9,7 @@
     "outDir": "./lib",
     "strict": true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "esModuleInterop": false, // enable if you having problems with compilation
     "skipLibCheck": false,  // enable if you having problems with compilation
     "noUncheckedIndexedAccess": true,
