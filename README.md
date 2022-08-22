@@ -5,23 +5,36 @@
 Complete configuration solution for typescript codebases:
 
 ```typescript
-class AppConfig {
-  @GenericKey('app.port')
-  @IntTransformer()
-  @IsInt()
-  port = 3000;
-
-  @GenericKey('app.host')
-  @EnvKey('TURBO_APP_HOST')
-  @IsString()
+class DbConfig {
+  @ConfigField()
   host!: string;
 
-  @GenericKey('services.manager.tasks')
-  @CliKey('servicesList')
-  @ArrayOfStringsTransformer()
-  @IsString({ each: true })
+  @ConfigField()
+  port = 3306;
+
+  @ConfigField()
+  autoReconnect = true;
+}
+
+class AppConfig {
+  @ConfigField({ nested: true })
+  db!: DbConfig;
+
+  // Complex field
+  @ConfigField()
+  @Transform(({ value }) => moment(value), { toClassOnly: true })
+  date!: Moment;
+
+  // Sources overriding
+  @ConfigField({
+    arrayOf: 'strings',
+    yamlKey: 'services.manager.tasks',
+    cliKey: 'servicesList',
+    arraySeparator: ':',
+  })
   tasks!: string[];
 }
+
 ```
 
 # Main features
@@ -55,11 +68,12 @@ class AppConfig {
 
 ## Prerequisites
 
-This library depends on decorators, so make sure your tsconfig.json includes this setting:
+This library depends on decorators, so make sure your tsconfig.json includes this settings:
 
 ```json
 "compilerOptions": {
-  "experimentalDecorators": true
+  "experimentalDecorators": true,
+  "emitDecoratorMetadata": true
 }
 ```
 
@@ -80,45 +94,49 @@ yarn add @monkee/turbo-config
 ## Basic usage
 
 ```typescript
-import { IsNumber, IsString } from 'class-validator';
-import {
-  CONFIG_SOURCE,
-  GenericKey,
-  EnvKey,
-  YamlKey,
-  CliKey,
-  IntTransformer,
-  ArrayOfStringsTransformer,
-  compileConfig,
-} from '@monkee/turbo-config';
+import { Transform } from 'class-transformer';
+import { IsNumber } from 'class-validator';
+import { compileConfig, ConfigField } from '@monkee/turbo-config';
 
 class AppConfig {
-  // GenericKey it's a little magic that reduces the number of decorators.
-  // You can turn it off it in compile settings and compilation will throw an error
-  @GenericKey('app.port')
-  // Library includes transform helpers for common types like integers, floats, arrays.
-  // But you can use all class-transformer library features
-  // https://github.com/typestack/class-transformer#additional-data-transformation
-  @IntTransformer()
-  // You can use any class validator decorators
-  // https://github.com/typestack/class-validator
-  @IsNumber()
-  // Default value example
+  /*
+    Every field with this decorator will be parsed as config field.
+    By default keys will be inferred from property name:
+    APP_PORT=3000 for env
+    appPort: 3000 yaml
+    --appPort=3000 for cli
+  */
+  @ConfigField()
+  @Min(0)
+  @Max(65535)
   appPort = 3000;
 
-  @GenericKey('app.host')
-  // It's possible to override generic key with specific keys
-  @EnvKey('SUPER_APP_HOST')
-  @YamlKey('super.app.host')
-  @CliKey('cli.app.host')
-  @IsString()
+  /*
+    There are some transforms and validations under the hood by default.
+    parseFloat() and isNumber() validator for numbers for example.
+    Its possible to disable everyting and handle it manually.
+    Any features of ClassValidator and ClassTransformer is available.
+  */
+  @ConfigField({
+    disableDefaultDecorators: true,
+  })
+  @Transform(({ value }) => parseFloat(value))
+  @IsNumber()
+  redisPort!: number;
+
+  /*
+    You can override any source key
+  */
+  @ConfigField({
+    envKey: 'SUPER_APP_HOST',
+    yamlKey: 'super.app.host',
+    cliKey: 'cli.app.host',
+  })
   appHost!: string;
 
-  // Arrays example
-  @GenericKey('tasks')
-  @ArrayOfStringsTransformer()
-  @IsString({ each: true })
-  tasks!: string[];
+  // Array example
+  @ConfigField({ arrayOf: 'ints' })
+  intsArray = [1, 2, 3];
 }
 
 const main = async () => {
@@ -135,32 +153,18 @@ const main = async () => {
 ## Nested configs
 
 ```typescript
-import { Type } from 'class-transformer';
-import { IsBoolean, IsInt, ValidateNested } from 'class-validator';
-import {
-  compileConfig,
-  GenericKey,
-  IntTransformer,
-  NestedKey,
-  BooleanTransformer,
-} from '@monkee/turbo-config';
+import { compileConfig, ConfigField } from '@monkee/turbo-config';
 
 class Nested {
-  @GenericKey('port')
-  @IntTransformer()
-  @IsInt()
+  ConfigField()
   port = 3000;
 
-  @GenericKey('autoReconnect')
-  @BooleanTransformer()
-  @IsBoolean()
+  ConfigField()
   autoReconnect = true;
 }
 
 class AppConfig {
-  @NestedKey('app.nested', Nested)
-  @ValidateNested()
-  @Type(() => Nested)
+  ConfigField({ nested: true })
   nested!: Nested;
 }
 
@@ -178,7 +182,6 @@ const main = async () => {
 {
   sourcesPriority: [CONFIG_SOURCE.YAML, CONFIG_SOURCE.ENV, CONFIG_SOURCE.CLI],
   ymlFiles: [],
-  disallowGenericKeys: false,
   throwOnValidatonError: true,
   throwIfYmlNotExist: false,
   classValidatorOptions: {

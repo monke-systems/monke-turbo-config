@@ -1,16 +1,4 @@
-import { Type } from 'class-transformer';
-import { IsString, IsBoolean, ValidateNested, IsNumber } from 'class-validator';
-import {
-  GenericKey,
-  NestedKey,
-  EnvKey,
-  compileConfig,
-  BooleanTransformer,
-  IntTransformer,
-  ArrayOfStringsTransformer,
-  ArrayOfIntsTransformer,
-  CliKey,
-} from '../src';
+import { compileConfig, ConfigField } from '../src';
 import {
   E2E_YAMLS,
   getE2EYamlPath,
@@ -21,46 +9,30 @@ import {
 describe('Complex config positive scenario (e2e)', () => {
   it('Complex config', async () => {
     class Nested {
-      @GenericKey('host')
-      @IsString()
+      @ConfigField()
       host!: string;
 
-      @GenericKey('autoReconnect')
-      @BooleanTransformer()
-      @IsBoolean()
+      @ConfigField()
       autoReconnect!: boolean;
     }
 
     class ComplexConfig {
-      @NestedKey('db.mysql', Nested)
-      @ValidateNested()
-      @Type(() => Nested)
+      @ConfigField({ nested: true, nestedKey: 'db.mysql' })
       dbMysql!: Nested;
 
-      @GenericKey('app.port')
-      @IntTransformer()
-      @IsNumber()
+      @ConfigField({ genericKey: 'app.port' })
       appPort!: number;
 
-      @GenericKey('app.host')
-      @IsString()
+      @ConfigField({ genericKey: 'app.host' })
       appHost!: string;
 
-      @GenericKey('tasks')
-      // TODO: мержить дефолт настройки у декораторов
-      @ArrayOfStringsTransformer({ separator: ':', throwOnInvalidValue: true })
-      @IsString({ each: true })
+      @ConfigField({ arrayOf: 'strings', arraySeparator: ':' })
       tasks!: string[];
 
-      @GenericKey('intsArray')
-      @EnvKey('INTS_ARRAY')
-      @ArrayOfIntsTransformer()
-      @IsNumber({}, { each: true })
+      @ConfigField({ arrayOf: 'ints', yamlKey: 'intsArray' })
       intsArr!: number[];
 
-      @CliKey('some.arrayOfInts')
-      @ArrayOfIntsTransformer()
-      @IsNumber({}, { each: true })
+      @ConfigField({ arrayOf: 'ints', cliKey: 'some.arrayOfInts' })
       arrFromArgs!: number[];
     }
 

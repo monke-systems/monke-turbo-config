@@ -1,13 +1,4 @@
-import {
-  compileConfig,
-  EnvKey,
-  GenericKey,
-  YamlKey,
-  ArrayOfStringsTransformer,
-  BooleanTransformer,
-  IntTransformer,
-  CliKey,
-} from '../src';
+import { compileConfig, ConfigField } from '../src';
 import { CONFIG_SOURCE } from '../src/compiler/config-sources';
 import {
   E2E_YAMLS,
@@ -19,18 +10,17 @@ import {
 describe('Overriding (e2e)', () => {
   it('Specific keys should override generic key', async () => {
     class Conf {
-      @GenericKey('app.portWrong')
-      @YamlKey('app.port')
-      @IntTransformer()
+      @ConfigField({ genericKey: 'app.portWrong', yamlKey: 'app.port' })
       appPort!: number;
 
-      @GenericKey('tasksWrong')
-      @EnvKey('TASKS')
-      @ArrayOfStringsTransformer()
+      @ConfigField({
+        genericKey: 'tasksWrong',
+        envKey: 'TASKS',
+        arrayOf: 'strings',
+      })
       tasks!: string[];
 
-      @GenericKey('app.host')
-      @CliKey('host')
+      @ConfigField({ genericKey: 'app.host', cliKey: 'host' })
       appHost!: string;
     }
 
@@ -51,11 +41,10 @@ describe('Overriding (e2e)', () => {
 
   it('Yml files overriding', async () => {
     class Conf {
-      @GenericKey('db.mysql.host')
+      @ConfigField({ genericKey: 'db.mysql.host' })
       mysqlHost!: string;
 
-      @YamlKey('db.mysql.autoReconnect')
-      @BooleanTransformer()
+      @ConfigField({ yamlKey: 'db.mysql.autoReconnect' })
       mysqlAutoReconnect!: boolean;
     }
 
@@ -75,11 +64,10 @@ describe('Overriding (e2e)', () => {
 
   it('Sources priority: env', async () => {
     class Conf {
-      @GenericKey('db.mysql.host')
+      @ConfigField({ genericKey: 'db.mysql.host' })
       mysqlHost!: string;
 
-      @GenericKey('db.mysql.autoReconnect')
-      @BooleanTransformer()
+      @ConfigField({ genericKey: 'db.mysql.autoReconnect' })
       mysqlAutoReconnect!: boolean;
     }
 
@@ -102,11 +90,10 @@ describe('Overriding (e2e)', () => {
 
   it('Sources priority: yaml', async () => {
     class Conf {
-      @GenericKey('db.mysql.host')
+      @ConfigField({ genericKey: 'db.mysql.host' })
       mysqlHost!: string;
 
-      @GenericKey('db.mysql.autoReconnect')
-      @BooleanTransformer()
+      @ConfigField({ genericKey: 'db.mysql.autoReconnect' })
       mysqlAutoReconnect!: boolean;
     }
 
@@ -129,11 +116,10 @@ describe('Overriding (e2e)', () => {
 
   it('Sources priority: cli', async () => {
     class Conf {
-      @GenericKey('db.mysql.host')
+      @ConfigField({ genericKey: 'db.mysql.host' })
       mysqlHost!: string;
 
-      @GenericKey('db.mysql.autoReconnect')
-      @BooleanTransformer()
+      @ConfigField({ genericKey: 'db.mysql.autoReconnect' })
       mysqlAutoReconnect!: boolean;
     }
 
