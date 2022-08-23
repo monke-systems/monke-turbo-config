@@ -9,6 +9,7 @@ import {
   FloatTransformer,
 } from '../transform-helpers/common-transformers';
 import { CliKey, EnvKey, GenericKey, NestedKey, YamlKey } from './decorators';
+import { getPropertyType } from './metadata';
 
 export type ArrayOfOptions = 'strings' | 'ints' | 'floats';
 
@@ -73,13 +74,7 @@ export const ConfigField = (opts: ConfigFieldOptions = {}) => {
     // Define generic key
     decoratorsToApply.push(GenericKey(opts.genericKey ?? property));
 
-    const type = Reflect.getMetadata('design:type', target, property);
-
-    if (type === undefined) {
-      throw new TurboConfigCompileError(
-        `Can not detect field type. Does you enabled "emitDecoratorMetadata" option in tsconfig?`,
-      );
-    }
+    const type = getPropertyType(target, property);
 
     if (opts.nested === true) {
       decoratorsToApply.push(

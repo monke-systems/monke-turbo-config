@@ -4,7 +4,6 @@ import { plainToInstance } from 'class-transformer';
 import type { ValidationError } from 'class-validator';
 import { validateSync } from 'class-validator';
 import * as deepMerge from 'deepmerge';
-import 'reflect-metadata';
 import * as YAML from 'yaml';
 import * as yargs from 'yargs-parser';
 import {
@@ -13,6 +12,7 @@ import {
   getPropertyEnvKey,
   getPropertyGenericKey,
   getPropertyNestedKey,
+  getPropertyType,
   getPropertyYamlKey,
 } from '../decorators/metadata';
 import { TurboConfigCompileError, TurboConfigValidationErr } from '../errors';
@@ -29,8 +29,21 @@ type ValuesBySource = {
   [key in CONFIG_SOURCE]: unknown;
 };
 
+export type ConfigSchemaEntry = {
+  type?: unknown;
+  defaultValue?: unknown;
+  keys?: {
+    [key in CONFIG_SOURCE]: string;
+  };
+
+  children?: Record<string, ConfigSchemaEntry>;
+};
+
+export type ConfigSchema = Record<string, ConfigSchemaEntry>;
+
 export type CompileResult<T> = {
   config: T;
+  configSchema: ConfigSchema;
   validationErrors: ValidationError[];
 };
 
@@ -56,17 +69,23 @@ type ResolvedSources = {
   [key in CONFIG_SOURCE]: any;
 };
 
+type RawConfig = {
+  schema: ConfigSchema;
+  rawFields: Record<string, unknown>;
+};
+
 const buildRawConfig = <T extends object>(
   target: new () => T,
   sources: ResolvedSources,
   opts: CompileConfigOptions = {},
   nestedKeyPrefix = '',
-) => {
+): RawConfig => {
   // eslint-disable-next-line new-cap
   const instance = new target();
   const configProperties = getPropertiesList(instance);
 
   const rawConfig: Record<string, unknown> = {};
+  const configSchema: ConfigSchema = {};
 
   for (const propertyName of configProperties) {
     const nestedKey = getPropertyNestedKey(instance, propertyName);
@@ -78,7 +97,10 @@ const buildRawConfig = <T extends object>(
         opts,
         `${nestedKeyPrefix}.${nestedKey.key}`,
       );
-      rawConfig[propertyName] = nested;
+      rawConfig[propertyName] = nested.rawFields;
+      configSchema[propertyName] = {
+        children: nested.schema,
+      };
       continue;
     }
 
@@ -119,9 +141,20 @@ const buildRawConfig = <T extends object>(
     );
 
     rawConfig[propertyName] = prioritizedValue;
+
+    configSchema[propertyName] = {
+      type: getPropertyType(instance, propertyName),
+      // @ts-expect-error asdasd
+      defaultValue: instance[propertyName],
+      keys: {
+        env: envKey,
+        yaml: yamlKey,
+        cli: cliKey,
+      },
+    };
   }
 
-  return rawConfig;
+  return { schema: configSchema, rawFields: rawConfig };
 };
 
 export const compileConfigSync = <T extends object>(
@@ -181,7 +214,7 @@ const compileConfigInternal = <T extends object>(
 
   const parsedArgs = yargs(process.argv.slice(2));
 
-  const rawConfig = buildRawConfig(
+  const { schema, rawFields } = buildRawConfig(
     configClass,
     {
       yaml: mergedYaml,
@@ -193,7 +226,7 @@ const compileConfigInternal = <T extends object>(
 
   const instanceOfConfig = plainToInstance(
     configClass,
-    rawConfig,
+    rawFields,
     opts.classTransformerOptions!,
   );
 
@@ -208,5 +241,6 @@ const compileConfigInternal = <T extends object>(
   return {
     config: instanceOfConfig,
     validationErrors: errors,
+    configSchema: schema,
   };
 };

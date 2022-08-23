@@ -1,7 +1,7 @@
 {
   "name": "@monkee/turbo-config",
   "description": "turbo-ts-config package",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -21,7 +21,6 @@
   },
   "homepage": "https://github.com/monke-systems/monke-turbo-config/#readme",
   "scripts": {
-    "start:dev": "ts-node src/dev-index.ts",
     "build": "tsc --project tsconfig.build.json",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "jest --passWithNoTests -t",
