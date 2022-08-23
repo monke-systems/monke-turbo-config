@@ -8,19 +8,19 @@ import {
   nestedKeySymbol,
 } from './metadata';
 
-export const GenericKey = (key: string) => {
-  return (target: object, property: string) => {
+export const GenericKey = (key: string): PropertyDecorator => {
+  return (target: object, property: string | symbol) => {
     Reflect.defineMetadata(genericKeySymbol, key, target, property);
 
-    addToPropertiesList(target, property);
+    addToPropertiesList(target, property.toString());
   };
 };
 
 export const NestedKey = (
   key: string,
   configClass: ClassConstructor<object>,
-) => {
-  return (target: object, property: string) => {
+): PropertyDecorator => {
+  return (target: object, property: string | symbol) => {
     Reflect.defineMetadata(
       nestedKeySymbol,
       { key, configClass },
@@ -28,30 +28,30 @@ export const NestedKey = (
       property,
     );
 
-    addToPropertiesList(target, property);
+    addToPropertiesList(target, property.toString());
   };
 };
 
-export const EnvKey = (key: string) => {
-  return (target: object, property: string) => {
+export const EnvKey = (key: string): PropertyDecorator => {
+  return (target: object, property: string | symbol) => {
     Reflect.defineMetadata(envKeySymbol, key, target, property);
 
-    addToPropertiesList(target, property);
+    addToPropertiesList(target, property.toString());
   };
 };
 
-export const YamlKey = (key: string) => {
-  return (target: object, property: string) => {
+export const YamlKey = (key: string): PropertyDecorator => {
+  return (target: object, property: string | symbol) => {
     Reflect.defineMetadata(yamlKeySymbol, key, target, property);
 
-    addToPropertiesList(target, property);
+    addToPropertiesList(target, property.toString());
   };
 };
 
-export const CliKey = (key: string) => {
-  return (target: object, property: string) => {
+export const CliKey = (key: string): PropertyDecorator => {
+  return (target: object, property: string | symbol) => {
     Reflect.defineMetadata(cliKeySymbol, key, target, property);
 
-    addToPropertiesList(target, property);
+    addToPropertiesList(target, property.toString());
   };
 };

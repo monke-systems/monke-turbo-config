@@ -1,7 +1,7 @@
 {
   "name": "@monkee/turbo-config",
   "description": "turbo-ts-config package",
-  "version": "0.9.3",
+  "version": "0.10.3",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/monke-systems/monke-turbo-config/#readme",
   "scripts": {
-    "start": "ts-node src/index2.ts",
+    "start:dev": "ts-node src/dev-index.ts",
     "build": "tsc --project tsconfig.build.json",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "jest --passWithNoTests -t",
@@ -44,7 +44,7 @@
     "yargs-parser": "^21.0.1"
   },
   "devDependencies": {
-    "@monkee/eslint-config": "0.9.15",
+    "@monkee/eslint-config": "0.9.16",
     "@nestjs/common": "8.4.7",
     "@types/jest": "28.1.0",
     "@types/node": "17.0.39",

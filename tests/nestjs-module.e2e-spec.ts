@@ -1,11 +1,10 @@
-import { GenericKey, IntTransformer, TurboConfigModule } from '../src';
+import { ConfigField, TurboConfigModule } from '../src';
 import { setEnvs } from './utils/test-utils';
 
 describe('NestJs module (e2e)', () => {
   it('forRootAsync should return global dynamic module', async () => {
     class Conf {
-      @GenericKey('app.port')
-      @IntTransformer()
+      @ConfigField()
       appPort!: number;
     }
 
@@ -30,8 +29,7 @@ describe('NestJs module (e2e)', () => {
 
   it('registerAsync should return local dynamic module', async () => {
     class Conf {
-      @GenericKey('app.port')
-      @IntTransformer()
+      @ConfigField()
       appPort!: number;
     }
 
