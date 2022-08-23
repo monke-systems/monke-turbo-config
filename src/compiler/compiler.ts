@@ -124,6 +124,27 @@ const buildRawConfig = <T extends object>(
   return rawConfig;
 };
 
+export const compileConfigSync = <T extends object>(
+  configClass: new () => T,
+  opts: CompileConfigOptions = {},
+): CompileResult<T> => {
+  const mergedOpts = mergeOptionsWithDefault(opts);
+
+  let yamls: object[] = [];
+  try {
+    yamls = mergedOpts.ymlFiles!.map((filePath) => {
+      const file = fs.readFileSync(filePath, 'utf-8');
+      return YAML.parse(file);
+    });
+  } catch (e) {
+    if (isError(e)) {
+      throw new TurboConfigCompileError(e.message);
+    }
+  }
+
+  return compileConfigInternal(configClass, mergedOpts, yamls);
+};
+
 export const compileConfig = async <T extends object>(
   configClass: new () => T,
   opts: CompileConfigOptions = {},
@@ -146,6 +167,14 @@ export const compileConfig = async <T extends object>(
     }
   }
 
+  return compileConfigInternal(configClass, mergedOpts, yamls);
+};
+
+const compileConfigInternal = <T extends object>(
+  configClass: new () => T,
+  opts: CompileConfigOptions,
+  yamls: object[],
+): CompileResult<T> => {
   const mergedYaml = yamls.reduce((accum, value) => {
     return deepMerge(accum, value);
   }, {});
@@ -159,21 +188,18 @@ export const compileConfig = async <T extends object>(
       env: process.env,
       cli: parsedArgs,
     },
-    mergedOpts,
+    opts,
   );
 
   const instanceOfConfig = plainToInstance(
     configClass,
     rawConfig,
-    mergedOpts.classTransformerOptions!,
+    opts.classTransformerOptions!,
   );
 
-  const errors = validateSync(
-    instanceOfConfig,
-    mergedOpts.classValidatorOptions,
-  );
+  const errors = validateSync(instanceOfConfig, opts.classValidatorOptions);
 
-  if (mergedOpts.throwOnValidatonError === true && errors.length !== 0) {
+  if (opts.throwOnValidatonError === true && errors.length !== 0) {
     throw new TurboConfigValidationErr(
       `\n${errors.map((e) => e.toString()).join('\n')}`,
     );
