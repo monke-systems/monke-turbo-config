@@ -229,7 +229,19 @@ WIP
 
 ## Documentation generator
 
-WIP
+```typescript
+import { generateConfigDoc, CONFIG_SOURCE } from '@monkee/turbo-config';
+
+class AppConfig {
+  // ...
+}
+
+generateConfigDoc(AppConfig, {
+  title: 'Some app doc',
+  writeToFile: 'CONFIG_REFERENCE.md',
+  keysType: CONFIG_SOURCE.ENV,
+});
+```
 
 # Authors
 

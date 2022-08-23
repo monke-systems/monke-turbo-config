@@ -12,6 +12,7 @@ import {
   getPropertyEnvKey,
   getPropertyGenericKey,
   getPropertyNestedKey,
+  getPropertyType,
   getPropertyYamlKey,
 } from '../decorators/metadata';
 import { TurboConfigCompileError, TurboConfigValidationErr } from '../errors';
@@ -29,7 +30,9 @@ type ValuesBySource = {
 };
 
 export type ConfigSchemaEntry = {
-  schema?: {
+  type?: unknown;
+  defaultValue?: unknown;
+  keys?: {
     [key in CONFIG_SOURCE]: string;
   };
 
@@ -138,8 +141,12 @@ const buildRawConfig = <T extends object>(
     );
 
     rawConfig[propertyName] = prioritizedValue;
+
     configSchema[propertyName] = {
-      schema: {
+      type: getPropertyType(instance, propertyName),
+      // @ts-expect-error asdasd
+      defaultValue: instance[propertyName],
+      keys: {
         env: envKey,
         yaml: yamlKey,
         cli: cliKey,

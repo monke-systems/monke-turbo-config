@@ -1,4 +1,5 @@
 import type { ClassConstructor } from 'class-transformer';
+import { TurboConfigCompileError } from '../errors';
 
 const turboConfigPropertiesSymbol = Symbol('turboConifgProperties');
 
@@ -66,4 +67,16 @@ export const getPropertyCliKey = (
   propertyName: string,
 ): string | undefined => {
   return Reflect.getMetadata(cliKeySymbol, target, propertyName);
+};
+
+export const getPropertyType = (target: object, propertyName: string): any => {
+  const type = Reflect.getMetadata('design:type', target, propertyName);
+
+  if (type === undefined) {
+    throw new TurboConfigCompileError(
+      `Can not detect field type. Does you enabled "emitDecoratorMetadata" option in tsconfig?`,
+    );
+  }
+
+  return type;
 };
