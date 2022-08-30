@@ -4,6 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import type { ValidationError } from 'class-validator';
 import { validateSync } from 'class-validator';
 import * as deepMerge from 'deepmerge';
+import * as dotenv from 'dotenv';
 import * as YAML from 'yaml';
 import * as yargs from 'yargs-parser';
 import {
@@ -17,7 +18,7 @@ import {
 } from '../decorators/metadata';
 import { TurboConfigCompileError, TurboConfigValidationErr } from '../errors';
 import { getByKeyPath } from '../utils/get-by-key-path';
-import { isError } from '../utils/ts-type-guards';
+import { isError, isNodeJsError } from '../utils/ts-type-guards';
 import type { CompileConfigOptions } from './compiler-options';
 import { mergeOptionsWithDefault } from './compiler-options';
 import { CONFIG_SOURCE } from './config-sources';
@@ -170,12 +171,45 @@ export const compileConfigSync = <T extends object>(
       return YAML.parse(file);
     });
   } catch (e) {
-    if (isError(e)) {
-      throw new TurboConfigCompileError(e.message);
+    const shouldNotToThrow =
+      !mergedOpts.throwIfYmlNotExist! &&
+      isNodeJsError(e) &&
+      e.code === 'ENOENT';
+
+    if (!shouldNotToThrow) {
+      if (isError(e)) {
+        throw new TurboConfigCompileError(e.message);
+      } else {
+        throw e;
+      }
     }
   }
 
-  return compileConfigInternal(configClass, mergedOpts, yamls);
+  let envs: Record<string, string>[] = [];
+
+  if (mergedOpts.loadEnvFiles!) {
+    try {
+      envs = mergedOpts.envFiles!.map((filePath) => {
+        const file = fs.readFileSync(filePath, 'utf-8');
+        return dotenv.parse(file);
+      });
+    } catch (e) {
+      const shouldNotToThrow =
+        !mergedOpts.throwIfEnvFileNotExist! &&
+        isNodeJsError(e) &&
+        e.code === 'ENOENT';
+
+      if (!shouldNotToThrow) {
+        if (isError(e)) {
+          throw new TurboConfigCompileError(e.message);
+        } else {
+          throw e;
+        }
+      }
+    }
+  }
+
+  return compileConfigInternal(configClass, mergedOpts, yamls, envs);
 };
 
 export const compileConfig = async <T extends object>(
@@ -184,33 +218,73 @@ export const compileConfig = async <T extends object>(
 ): Promise<CompileResult<T>> => {
   const mergedOpts = mergeOptionsWithDefault(opts);
 
-  const readTasks = mergedOpts.ymlFiles!.map(async (filePath) => {
+  const readYamlTasks = mergedOpts.ymlFiles!.map(async (filePath) => {
     const file = await readFile(filePath, 'utf-8');
     return YAML.parse(file);
   });
 
   let yamls = [] as object[];
   try {
-    yamls = await Promise.all(readTasks);
+    yamls = await Promise.all(readYamlTasks);
   } catch (e) {
-    if (mergedOpts.throwIfYmlNotExist!) {
+    const shouldNotToThrow =
+      !mergedOpts.throwIfYmlNotExist! &&
+      isNodeJsError(e) &&
+      e.code === 'ENOENT';
+
+    if (!shouldNotToThrow) {
       if (isError(e)) {
         throw new TurboConfigCompileError(e.message);
+      } else {
+        throw e;
       }
     }
   }
 
-  return compileConfigInternal(configClass, mergedOpts, yamls);
+  let envs: Record<string, string>[] = [];
+
+  if (mergedOpts.loadEnvFiles!) {
+    const readEnvsTasks = mergedOpts.envFiles!.map(async (filePath) => {
+      const file = await readFile(filePath, 'utf-8');
+      return dotenv.parse(file);
+    });
+
+    try {
+      envs = await Promise.all(readEnvsTasks);
+    } catch (e) {
+      const shouldNotToThrow =
+        !mergedOpts.throwIfEnvFileNotExist! &&
+        isNodeJsError(e) &&
+        e.code === 'ENOENT';
+
+      if (!shouldNotToThrow) {
+        if (isError(e)) {
+          throw new TurboConfigCompileError(e.message);
+        } else {
+          throw e;
+        }
+      }
+    }
+  }
+
+  return compileConfigInternal(configClass, mergedOpts, yamls, envs);
 };
 
 const compileConfigInternal = <T extends object>(
   configClass: new () => T,
   opts: CompileConfigOptions,
   yamls: object[],
+  envs: Record<string, string>[],
 ): CompileResult<T> => {
   const mergedYaml = yamls.reduce((accum, value) => {
     return deepMerge(accum, value);
   }, {});
+
+  const mergedEnvsFromFiles = envs.reduce((accum, value) => {
+    return deepMerge(accum, value);
+  }, {});
+
+  const mergedEnvs = deepMerge(mergedEnvsFromFiles, process.env);
 
   const parsedArgs = yargs(process.argv.slice(2));
 
@@ -218,7 +292,7 @@ const compileConfigInternal = <T extends object>(
     configClass,
     {
       yaml: mergedYaml,
-      env: process.env,
+      env: mergedEnvs,
       cli: parsedArgs,
     },
     opts,

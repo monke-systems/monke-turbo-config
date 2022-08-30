@@ -1,7 +1,9 @@
 import { compileConfig, ConfigField } from '../src';
 import { CONFIG_SOURCE } from '../src/compiler/config-sources';
 import {
+  E2E_ENV_FILES,
   E2E_YAMLS,
+  getE2EEnvFilePath,
   getE2EYamlPath,
   setArgs,
   setEnvs,
@@ -58,6 +60,36 @@ describe('Overriding (e2e)', () => {
     const expected = new Conf();
     expected.mysqlHost = 'notLocalhost';
     expected.mysqlAutoReconnect = false;
+
+    expect(config).toStrictEqual(expected);
+  });
+
+  it('Env files overriding', async () => {
+    class Conf {
+      @ConfigField({ genericKey: 'db.mysql.host' })
+      mysqlHost!: string;
+
+      @ConfigField({ genericKey: 'db.mysql.autoReconnect' })
+      mysqlAutoReconnect!: boolean;
+
+      @ConfigField({ genericKey: 'db.redis.host' })
+      redisHost!: string;
+    }
+
+    setEnvs(['DB_REDIS_HOST', 'redis-555']);
+
+    const { config } = await compileConfig(Conf, {
+      envFiles: [
+        getE2EEnvFilePath(E2E_ENV_FILES.COMPLEX),
+        getE2EEnvFilePath(E2E_ENV_FILES.OVERRIDE),
+      ],
+      loadEnvFiles: true,
+    });
+
+    const expected = new Conf();
+    expected.mysqlHost = 'notLocalhost';
+    expected.mysqlAutoReconnect = true;
+    expected.redisHost = 'redis-555';
 
     expect(config).toStrictEqual(expected);
   });

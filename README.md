@@ -45,6 +45,7 @@ class AppConfig {
     * [class-validator](https://github.com/typestack/class-validator) as validation solution
     * [class-transformer](https://github.com/typestack/class-transformer) for type management
     * [yargs-parser](https://github.com/yargs/yargs-parser) for cli source
+    * [dotenv](https://github.com/motdotla/dotenv) for envs parsing
 
 1. [NestJs module out the box](#nestjs-usage)
 1. Config documentation generator (WIP)
@@ -186,11 +187,17 @@ const main = async () => {
 // Default compile options
 {
   sourcesPriority: [CONFIG_SOURCE.YAML, CONFIG_SOURCE.ENV, CONFIG_SOURCE.CLI],
-  ymlFiles: [],
   throwOnValidatonError: true,
   throwIfYmlNotExist: false,
+  throwIfEnvFileNotExist: false,
+  ymlFiles: [],
+  envFiles: [],
+  loadEnvFiles: false,
   classValidatorOptions: {
     skipMissingProperties: false,
+  },
+  classTransformerOptions: {
+    exposeDefaultValues: true,
   },
 }
 ```

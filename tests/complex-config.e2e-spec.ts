@@ -1,7 +1,9 @@
 import type { ConfigSchema } from '../src';
-import { compileConfig, ConfigField } from '../src';
+import { CONFIG_SOURCE, compileConfig, ConfigField } from '../src';
 import {
+  E2E_ENV_FILES,
   E2E_YAMLS,
+  getE2EEnvFilePath,
   getE2EYamlPath,
   setArgs,
   setEnvs,
@@ -37,18 +39,21 @@ describe('Complex config positive scenario (e2e)', () => {
       arrFromArgs!: number[];
     }
 
-    setEnvs(
-      ['TASKS', 'one:two:three'],
-      ['APP_PORT', '8989'],
-      ['DB_MYSQL_AUTO_RECONNECT', 'true'],
-    );
+    setEnvs(['TASKS', 'one:two:three'], ['APP_PORT', '8989']);
     setArgs('--some.arrayOfInts=1,6,10');
 
     const { config, configSchema } = await compileConfig(ComplexConfig, {
+      sourcesPriority: [
+        CONFIG_SOURCE.YAML,
+        CONFIG_SOURCE.ENV,
+        CONFIG_SOURCE.CLI,
+      ],
       ymlFiles: [
         getE2EYamlPath(E2E_YAMLS.COMPLEX),
         getE2EYamlPath(E2E_YAMLS.OVERRIDE),
       ],
+      envFiles: [getE2EEnvFilePath(E2E_ENV_FILES.OVERRIDE)],
+      loadEnvFiles: true,
     });
 
     const expected = new ComplexConfig();

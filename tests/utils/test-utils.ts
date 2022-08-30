@@ -3,10 +3,20 @@ import * as path from 'path';
 export enum E2E_YAMLS {
   COMPLEX = 'complex-config.yml',
   OVERRIDE = 'override-config.yml',
+  INVALID = 'invalid-config.yml',
+}
+
+export enum E2E_ENV_FILES {
+  COMPLEX = '.env.complex',
+  OVERRIDE = '.env.override',
 }
 
 export const getE2EYamlPath = (file: E2E_YAMLS): string => {
   return path.resolve(process.cwd(), 'tests', 'files', 'configs', file);
+};
+
+export const getE2EEnvFilePath = (file: E2E_ENV_FILES): string => {
+  return path.resolve(process.cwd(), 'tests', 'files', 'env-files', file);
 };
 
 export const setEnvs = (...envs: [string, string][]) => {
