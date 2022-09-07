@@ -1,4 +1,5 @@
-import { Transform } from 'class-transformer';
+import type { ClassConstructor } from 'class-transformer';
+import { plainToInstance, Transform } from 'class-transformer';
 import { arrayParse, booleanParse, floatParse, intParse } from './parsers';
 
 export type CommonTransformerArgs = {
@@ -94,5 +95,34 @@ export const ArrayOfFloatsTransformer = (
     const parsedArray = arrayParse(value, args.separator ?? ',');
 
     return parsedArray.map((val) => floatParse(val, args.throwOnInvalidValue));
+  });
+};
+
+export const ArrayOfClassesTransformer = (
+  args: ArrayTransformerArgs & { type?: ClassConstructor<unknown> } = {
+    separator: ',',
+    throwOnInvalidValue: true,
+  },
+) => {
+  return Transform(({ value }) => {
+    const parsedArray = arrayParse(value, args.separator ?? ',');
+
+    return parsedArray.map((val) => {
+      if (typeof val === 'string' && args.type !== undefined) {
+        const parsedVal = val
+          .split(';')
+          .reduce<Record<string, string>>((accum, entry) => {
+            const [key, value] = entry.split('=');
+            if (key !== undefined && value !== undefined) {
+              accum[key] = value;
+            }
+
+            return accum;
+          }, {});
+
+        return plainToInstance(args.type, parsedVal);
+      }
+      return val;
+    });
   });
 };

@@ -1,7 +1,15 @@
+import type { ClassConstructor } from 'class-transformer';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { TurboConfigCompileError } from '../errors';
 import {
+  ArrayOfClassesTransformer,
   ArrayOfFloatsTransformer,
   ArrayOfIntsTransformer,
   ArrayOfStringsTransformer,
@@ -11,7 +19,11 @@ import {
 import { CliKey, EnvKey, GenericKey, NestedKey, YamlKey } from './decorators';
 import { getPropertyType } from './metadata';
 
-export type ArrayOfOptions = 'strings' | 'ints' | 'floats';
+export type ArrayOfOptions =
+  | 'strings'
+  | 'ints'
+  | 'floats'
+  | ClassConstructor<unknown>;
 
 export type ConfigFieldOptions = {
   arrayOf?: ArrayOfOptions;
@@ -63,6 +75,17 @@ const getArrayDecorators = (type: ArrayOfOptions, separator: string) => {
           throwOnInvalidValue: true,
         }),
         IsNumber(undefined, { each: true }),
+      ];
+    default:
+      return [
+        IsArray(),
+        ValidateNested({ each: true }),
+        Type(() => type),
+        ArrayOfClassesTransformer({
+          separator,
+          throwOnInvalidValue: true,
+          type,
+        }),
       ];
   }
 };

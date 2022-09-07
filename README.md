@@ -59,6 +59,7 @@ class AppConfig {
   - [Basic usage](#basic-usage)
 - [Advanced usage](#advanced-usage)
   - [Nested configs](#nested-configs)
+  - [Array of non-primitive types](#array-of-non-primitive-types)
   - [Compile options reference](#compile-options-reference)
   - [Error handling](#error-handling)
   - [Documentation generator](#documentation-generator)
@@ -178,6 +179,33 @@ const main = async () => {
   const { config } = await compileConfig(AppConfig);
 
   console.log(config.nested);
+};
+```
+
+## Array of non-primitive types
+
+```typescript
+import { compileConfig, ConfigField } from '@monkee/turbo-config';
+
+class Repository {
+  @ConfigField()
+  url!: string;
+
+  @ConfigField()
+  token!: string;
+}
+
+class AppConfig {
+  @ConfigField({ arrayOf: Repository })
+  repositories!: Repository[];
+}
+
+const main = async () => {
+  process.env.REPOSITORIES = 'url=first;token=someToken,url=second;token=secret';
+
+  const { config } = await compileConfig(AppConfig);
+
+  console.log(config.repositories);
 };
 ```
 

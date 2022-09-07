@@ -51,6 +51,7 @@ export type CompileResult<T> = {
 const getValueBySourcePriority = (
   values: ValuesBySource,
   priority: CONFIG_SOURCE[],
+  mergeArrays: boolean,
 ): unknown => {
   const latestDefined = priority
     .slice()
@@ -139,6 +140,7 @@ const buildRawConfig = <T extends object>(
         [CONFIG_SOURCE.CLI]: cliVal,
       },
       opts.sourcesPriority!,
+      true,
     );
 
     rawConfig[propertyName] = prioritizedValue;

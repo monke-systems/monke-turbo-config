@@ -13,3 +13,6 @@ intsArray:
   - 1
   - 2
   - 3
+repositories:
+  - url: https://gitlab.com/123
+    token: secretToken

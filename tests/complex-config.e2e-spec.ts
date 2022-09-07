@@ -11,6 +11,17 @@ import {
 
 describe('Complex config positive scenario (e2e)', () => {
   it('Complex config', async () => {
+    class Repository {
+      @ConfigField()
+      url!: string;
+
+      @ConfigField()
+      token!: string;
+
+      @ConfigField()
+      someFlag: boolean = false;
+    }
+
     class Nested {
       @ConfigField()
       host!: string;
@@ -22,6 +33,15 @@ describe('Complex config positive scenario (e2e)', () => {
     class ComplexConfig {
       @ConfigField({ nested: true, nestedKey: 'db.mysql' })
       dbMysql!: Nested;
+
+      @ConfigField({ arrayOf: Repository })
+      repositories!: Repository[];
+
+      @ConfigField({ arrayOf: Repository })
+      repositoriesEnvs!: Repository[];
+
+      @ConfigField({ arrayOf: Repository })
+      repositoriesCli!: Repository[];
 
       @ConfigField({ genericKey: 'app.port_mistake_use_default' })
       appPort: number = 8989;
@@ -39,8 +59,18 @@ describe('Complex config positive scenario (e2e)', () => {
       arrFromArgs!: number[];
     }
 
-    setEnvs(['TASKS', 'one:two:three'], ['APP_PORT', '8989']);
-    setArgs('--some.arrayOfInts=1,6,10');
+    setEnvs(
+      ['TASKS', 'one:two:three'],
+      ['APP_PORT', '8989'],
+      [
+        'REPOSITORIES_ENVS',
+        'url=https://github.com/1;token=someToken;someFlag=true',
+      ],
+    );
+    setArgs(
+      '--some.arrayOfInts=1,6,10',
+      '--repositoriesCli=url=https://gitpop.com/555;token=gitpopToken;',
+    );
 
     const { config, configSchema } = await compileConfig(ComplexConfig, {
       sourcesPriority: [
@@ -60,6 +90,25 @@ describe('Complex config positive scenario (e2e)', () => {
     expected.dbMysql = new Nested();
     expected.dbMysql.autoReconnect = true;
     expected.dbMysql.host = 'notLocalhost';
+
+    const repository1 = new Repository();
+    repository1.url = 'https://gitlab.com/123';
+    repository1.token = 'secretToken';
+    repository1.someFlag = false;
+    expected.repositories = [repository1];
+
+    const repository2 = new Repository();
+    repository2.url = 'https://github.com/1';
+    repository2.token = 'someToken';
+    repository2.someFlag = true;
+    expected.repositoriesEnvs = [repository2];
+
+    const repository3 = new Repository();
+    repository3.url = 'https://gitpop.com/555';
+    repository3.token = 'gitpopToken';
+    repository3.someFlag = false;
+    expected.repositoriesCli = [repository3];
+
     expected.appHost = 'localhost';
     expected.appPort = 8989;
     expected.tasks = ['one', 'two', 'three'];
@@ -114,6 +163,33 @@ describe('Complex config positive scenario (e2e)', () => {
         type: Array,
         defaultValue: undefined,
         keys: { env: 'INTS_ARR', yaml: 'intsArray', cli: 'intsArr' },
+      },
+      repositories: {
+        type: Array,
+        defaultValue: undefined,
+        keys: {
+          env: 'REPOSITORIES',
+          yaml: 'repositories',
+          cli: 'repositories',
+        },
+      },
+      repositoriesEnvs: {
+        type: Array,
+        defaultValue: undefined,
+        keys: {
+          env: 'REPOSITORIES_ENVS',
+          yaml: 'repositoriesEnvs',
+          cli: 'repositoriesEnvs',
+        },
+      },
+      repositoriesCli: {
+        type: Array,
+        defaultValue: undefined,
+        keys: {
+          env: 'REPOSITORIES_CLI',
+          yaml: 'repositoriesCli',
+          cli: 'repositoriesCli',
+        },
       },
       arrFromArgs: {
         type: Array,
