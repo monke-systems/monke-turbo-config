@@ -53,3 +53,19 @@ export const getConfigKeyByGenericKey = (
 
   throw new TurboConfigUnknownErr('Uknown source type');
 };
+
+export const createKeyFromSegments = (
+  ...segments: (string | undefined)[]
+): string => {
+  return segments
+    .filter((v) => v !== undefined)
+    .reduce<string>((accum, value, i) => {
+      if (i !== 0) {
+        accum += '.';
+      }
+
+      accum += value;
+
+      return accum;
+    }, '');
+};

@@ -16,6 +16,7 @@ class DbConfig {
   autoReconnect = true;
 }
 
+@ConfigPrefix('app')
 class AppConfig {
   @ConfigField({ nested: true })
   db!: DbConfig;
@@ -149,6 +150,7 @@ class AppConfig {
 const main = async () => {
   const { config } = await compileConfig(AppConfig, {
     ymlFiles: ['config.yml', 'override.yml'],
+    topLevelPrefix: 'app',
   });
 
   console.log(config);
@@ -221,6 +223,7 @@ const main = async () => {
   ymlFiles: [],
   envFiles: [],
   loadEnvFiles: false,
+  topLevelPrefix: undefined;
   classValidatorOptions: {
     skipMissingProperties: false,
   },

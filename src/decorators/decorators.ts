@@ -6,6 +6,7 @@ import {
   envKeySymbol,
   cliKeySymbol,
   nestedKeySymbol,
+  prefixSymbol,
 } from './metadata';
 
 export const GenericKey = (key: string): PropertyDecorator => {
@@ -53,5 +54,11 @@ export const CliKey = (key: string): PropertyDecorator => {
     Reflect.defineMetadata(cliKeySymbol, key, target, property);
 
     addToPropertiesList(target, property.toString());
+  };
+};
+
+export const ConfigPrefix = (prefix: string): ClassDecorator => {
+  return (target: object) => {
+    Reflect.defineMetadata(prefixSymbol, prefix, target);
   };
 };

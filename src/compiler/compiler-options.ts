@@ -8,6 +8,7 @@ export type CompileConfigOptions = {
   ymlFiles?: string[];
   envFiles?: string[];
   loadEnvFiles?: boolean;
+  topLevelPrefix?: string;
   throwOnValidatonError?: boolean;
   throwIfYmlNotExist?: boolean;
   throwIfEnvFileNotExist?: boolean;
@@ -20,6 +21,7 @@ export const defaultCompileConfigOpts: CompileConfigOptions = {
   throwOnValidatonError: true,
   throwIfYmlNotExist: false,
   throwIfEnvFileNotExist: false,
+  topLevelPrefix: undefined,
   ymlFiles: [],
   envFiles: [],
   loadEnvFiles: false,

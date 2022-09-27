@@ -8,6 +8,7 @@ import * as dotenv from 'dotenv';
 import * as YAML from 'yaml';
 import * as yargs from 'yargs-parser';
 import {
+  getClassConfigPrefix,
   getPropertiesList,
   getPropertyCliKey,
   getPropertyEnvKey,
@@ -22,7 +23,10 @@ import { isError, isNodeJsError } from '../utils/ts-type-guards';
 import type { CompileConfigOptions } from './compiler-options';
 import { mergeOptionsWithDefault } from './compiler-options';
 import { CONFIG_SOURCE } from './config-sources';
-import { getConfigKeyByGenericKey } from './keys-convert';
+import {
+  createKeyFromSegments,
+  getConfigKeyByGenericKey,
+} from './keys-convert';
 
 const readFile = promisify(fs.readFile);
 
@@ -79,10 +83,11 @@ const buildRawConfig = <T extends object>(
   target: new () => T,
   sources: ResolvedSources,
   opts: CompileConfigOptions = {},
-  nestedKeyPrefix = '',
+  nestedKeyPrefix?: string,
 ): RawConfig => {
   // eslint-disable-next-line new-cap
   const instance = new target();
+  const classPrefix = getClassConfigPrefix(target);
   const configProperties = getPropertiesList(instance);
 
   const rawConfig: Record<string, unknown> = {};
@@ -96,7 +101,7 @@ const buildRawConfig = <T extends object>(
         nestedKey.configClass,
         sources,
         opts,
-        `${nestedKeyPrefix}.${nestedKey.key}`,
+        createKeyFromSegments(nestedKeyPrefix, classPrefix, nestedKey.key),
       );
       rawConfig[propertyName] = nested.rawFields;
       configSchema[propertyName] = {
@@ -110,21 +115,21 @@ const buildRawConfig = <T extends object>(
     const envKey =
       getPropertyEnvKey(instance, propertyName) ??
       getConfigKeyByGenericKey(
-        `${nestedKeyPrefix}.${genericKey}`,
+        createKeyFromSegments(nestedKeyPrefix, classPrefix, genericKey),
         CONFIG_SOURCE.ENV,
       );
 
     const yamlKey =
       getPropertyYamlKey(instance, propertyName) ??
       getConfigKeyByGenericKey(
-        `${nestedKeyPrefix}.${genericKey}`,
+        createKeyFromSegments(nestedKeyPrefix, classPrefix, genericKey),
         CONFIG_SOURCE.YAML,
       );
 
     const cliKey =
       getPropertyCliKey(instance, propertyName) ??
       getConfigKeyByGenericKey(
-        `${nestedKeyPrefix}.${genericKey}`,
+        createKeyFromSegments(nestedKeyPrefix, classPrefix, genericKey),
         CONFIG_SOURCE.CLI,
       );
 
@@ -296,6 +301,7 @@ const compileConfigInternal = <T extends object>(
       cli: parsedArgs,
     },
     opts,
+    opts.topLevelPrefix,
   );
 
   const instanceOfConfig = plainToInstance(

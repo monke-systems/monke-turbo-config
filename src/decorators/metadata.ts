@@ -8,6 +8,7 @@ export const nestedKeySymbol = Symbol('turboConfigNestedKey');
 export const yamlKeySymbol = Symbol('turboConfigYamlKey');
 export const envKeySymbol = Symbol('turboConfigEnvKey');
 export const cliKeySymbol = Symbol('turboConfigCliKey');
+export const prefixSymbol = Symbol('turboConfigPrefix');
 
 export const addToPropertiesList = (target: object, propertyName: string) => {
   // get own fields from the target
@@ -67,6 +68,10 @@ export const getPropertyCliKey = (
   propertyName: string,
 ): string | undefined => {
   return Reflect.getMetadata(cliKeySymbol, target, propertyName);
+};
+
+export const getClassConfigPrefix = (target: object): string | undefined => {
+  return Reflect.getMetadata(prefixSymbol, target);
 };
 
 export const getPropertyType = (target: object, propertyName: string): any => {

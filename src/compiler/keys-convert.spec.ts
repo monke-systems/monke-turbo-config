@@ -1,5 +1,8 @@
 import { CONFIG_SOURCE } from './config-sources';
-import { getConfigKeyByGenericKey } from './keys-convert';
+import {
+  createKeyFromSegments,
+  getConfigKeyByGenericKey,
+} from './keys-convert';
 
 describe('Keys convertions spec', () => {
   describe('Yml keys convertions', () => {
@@ -40,6 +43,45 @@ describe('Keys convertions spec', () => {
         expect(getConfigKeyByGenericKey(input!, CONFIG_SOURCE.ENV)).toBe(
           output,
         );
+      }
+    });
+  });
+
+  describe('Create keys from segments', () => {
+    it('Should correctly create keys from segments', () => {
+      const cases = [
+        {
+          input: ['oneSegment'],
+          expect: 'oneSegment',
+        },
+        {
+          input: ['two', 'segments'],
+          expect: 'two.segments',
+        },
+        {
+          input: [undefined, 'leadingUndefined'],
+          expect: 'leadingUndefined',
+        },
+        {
+          input: ['trailingUndefined', undefined],
+          expect: 'trailingUndefined',
+        },
+        {
+          input: ['in', undefined, 'theMiddle'],
+          expect: 'in.theMiddle',
+        },
+        {
+          input: [undefined, 'everywhere', undefined],
+          expect: 'everywhere',
+        },
+        {
+          input: ['what', 'this', 'is', 'five', 'segments'],
+          expect: 'what.this.is.five.segments',
+        },
+      ];
+
+      for (const oneCase of cases) {
+        expect(createKeyFromSegments(...oneCase.input)).toBe(oneCase.expect);
       }
     });
   });
