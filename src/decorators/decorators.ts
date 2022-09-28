@@ -1,12 +1,11 @@
 import type { ClassConstructor } from 'class-transformer';
 import {
   addToPropertiesList,
-  genericKeySymbol,
-  yamlKeySymbol,
-  envKeySymbol,
   cliKeySymbol,
+  envKeySymbol,
+  genericKeySymbol,
   nestedKeySymbol,
-  prefixSymbol,
+  yamlKeySymbol,
 } from './metadata';
 
 export const GenericKey = (key: string): PropertyDecorator => {
@@ -54,11 +53,5 @@ export const CliKey = (key: string): PropertyDecorator => {
     Reflect.defineMetadata(cliKeySymbol, key, target, property);
 
     addToPropertiesList(target, property.toString());
-  };
-};
-
-export const ConfigPrefix = (prefix: string): ClassDecorator => {
-  return (target: object) => {
-    Reflect.defineMetadata(prefixSymbol, prefix, target);
   };
 };

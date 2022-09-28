@@ -1,5 +1,4 @@
-import { compileConfig, ConfigField } from '../src';
-import { ConfigPrefix } from '../src/decorators/decorators';
+import { compileConfig, ConfigField, ConfigPrefix } from '../src';
 import { E2E_YAMLS, getE2EYamlPath, setEnvs } from './utils/test-utils';
 
 describe('Config prefix (e2e)', () => {
