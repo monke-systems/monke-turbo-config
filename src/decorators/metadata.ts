@@ -79,7 +79,8 @@ export const getPropertyType = (target: object, propertyName: string): any => {
 
   if (type === undefined) {
     throw new TurboConfigCompileError(
-      `Can not detect field type. Does you enabled "emitDecoratorMetadata" option in tsconfig?`,
+      `Can not detect ${propertyName} field type. Does you enabled "emitDecoratorMetadata" option in tsconfig?.
+Also make sure there is no circular dependencies.`,
     );
   }
 
