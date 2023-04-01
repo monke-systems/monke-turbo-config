@@ -1,7 +1,7 @@
 {
   "name": "@monkee/turbo-config",
   "description": "turbo-ts-config package",
-  "version": "0.13.2",
+  "version": "0.14.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
