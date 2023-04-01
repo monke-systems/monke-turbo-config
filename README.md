@@ -2,6 +2,8 @@
 
 [![npm version](https://badge.fury.io/js/@monkee%2Fturbo-config.svg)](https://badge.fury.io/js/@monkee%2Fturbo-config)
 
+> :warning: package is under active development. minor versions may contain breaking changes
+
 Complete configuration solution for typescript codebases:
 
 ```typescript
@@ -235,27 +237,27 @@ const main = async () => {
 
 ## NestJs usage
 
-In general you need to register the config globally
+In general you need to register the configs globally
 
 ```typescript
 import { TurboConfigModule } from '@monkee/turbo-config';
 
 @Module({
   imports: [
-    TurboConfigModule.forRootAsync(AppConfig),
+    TurboConfigModule.forRootAsync([AppConfig, AnotherConfig]),
   ],
 })
 export class AppModule {}
 ```
 
-There is also an option to register a scoped config
+There is also an option to register a scoped configs
 
 ```typescript
 import { TurboConfigModule } from '@monkee/turbo-config';
 
 @Module({
   imports: [
-    TurboConfigModule.registerAsync(DatabaseConfig),
+    TurboConfigModule.registerAsync([DatabaseConfig, AnotherConfig]),
   ],
 })
 export class DatabaseModule {}

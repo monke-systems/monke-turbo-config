@@ -1,35 +1,37 @@
-import type { DynamicModule } from '@nestjs/common';
+import type { DynamicModule, Provider } from '@nestjs/common';
 import { compileConfig } from '../compiler/compiler';
 import type { CompileConfigOptions } from '../compiler/compiler-options';
 
 export class TurboConfigModule {
-  static async forRootAsync<T extends object>(
-    configClass: new () => T,
+  static async forRootAsync(
+    configClasses: (new () => any)[],
     opts: CompileConfigOptions = {},
   ): Promise<DynamicModule> {
-    return TurboConfigModule.register(configClass, opts, true);
+    return TurboConfigModule.register(configClasses, opts, true);
   }
 
-  static async registerAsync<T extends object>(
-    configClass: new () => T,
+  static async registerAsync(
+    configClasses: (new () => any)[],
     opts: CompileConfigOptions = {},
   ): Promise<DynamicModule> {
-    return TurboConfigModule.register(configClass, opts, false);
+    return TurboConfigModule.register(configClasses, opts, false);
   }
 
-  private static async register<T extends object>(
-    configClass: new () => T,
+  private static async register(
+    configClasses: (new () => any)[],
     opts: CompileConfigOptions,
     global: boolean,
   ): Promise<DynamicModule> {
-    const { config } = await compileConfig(configClass, opts);
+    const providers: Provider[] = await Promise.all(
+      configClasses.map(async (c) => {
+        const { config } = await compileConfig(c, opts);
 
-    const providers = [
-      {
-        useValue: config,
-        provide: configClass,
-      },
-    ];
+        return {
+          provide: c,
+          useValue: config,
+        };
+      }),
+    );
 
     return {
       module: TurboConfigModule,
