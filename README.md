@@ -47,7 +47,7 @@ class AppConfig {
     * [class-transformer](https://github.com/typestack/class-transformer) for type management
     * [yargs-parser](https://github.com/yargs/yargs-parser) for cli source
     * [dotenv](https://github.com/motdotla/dotenv) for envs parsing
-1. Config documentation generator (WIP)
+1. Config documentation generator
 1. Well configurable
 
 ## Table of contents
