@@ -5,7 +5,7 @@ import type { ValidationError } from 'class-validator';
 import { validateSync } from 'class-validator';
 import * as deepMerge from 'deepmerge';
 import * as dotenv from 'dotenv';
-import * as YAML from 'yaml';
+import * as yaml from 'yaml';
 import * as yargs from 'yargs-parser';
 import {
   getClassConfigPrefix,
@@ -71,6 +71,7 @@ const getValueBySourcePriority = (
 };
 
 type ResolvedSources = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key in CONFIG_SOURCE]: any;
 };
 
@@ -173,7 +174,7 @@ export const compileConfigSync = <T extends object>(
   try {
     yamls = mergedOpts.ymlFiles!.map((filePath) => {
       const file = fs.readFileSync(filePath, 'utf-8');
-      return YAML.parse(file);
+      return yaml.parse(file);
     });
   } catch (e) {
     const shouldNotToThrow =
@@ -225,7 +226,7 @@ export const compileConfig = async <T extends object>(
 
   const readYamlTasks = mergedOpts.ymlFiles!.map(async (filePath) => {
     const file = await readFile(filePath, 'utf-8');
-    return YAML.parse(file);
+    return yaml.parse(file);
   });
 
   let yamls = [] as object[];

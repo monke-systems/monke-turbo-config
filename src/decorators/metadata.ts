@@ -74,6 +74,7 @@ export const getClassConfigPrefix = (target: object): string | undefined => {
   return Reflect.getMetadata(prefixSymbol, target);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getPropertyType = (target: object, propertyName: string): any => {
   const type = Reflect.getMetadata('design:type', target, propertyName);
 
