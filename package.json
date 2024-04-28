@@ -45,7 +45,6 @@
   },
   "devDependencies": {
     "@monkee/eslint-config": "0.9.16",
-    "@nestjs/common": "9.3.12",
     "@types/jest": "28.1.0",
     "@types/node": "17.0.39",
     "@types/validator": "13.7.4",
