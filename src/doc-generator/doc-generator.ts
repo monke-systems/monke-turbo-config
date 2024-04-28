@@ -1,8 +1,8 @@
 import { writeFileSync } from 'fs';
 import * as path from 'path';
-import type { ConfigSchema } from '../compiler/compiler';
-import { compileConfigSync } from '../compiler/compiler';
-import { CONFIG_SOURCE } from '../compiler/config-sources';
+import type { ConfigSchema } from '../builder/builder';
+import { buildConfigSync } from '../builder/builder';
+import { CONFIG_SOURCE } from '../builder/config-sources';
 import type { GenerateConfigDocOptions } from './doc-generator-options';
 import { mergeDocOptionsWithDefault } from './doc-generator-options';
 
@@ -55,7 +55,7 @@ export const generateConfigDoc = <T extends object>(
 ): TurboConfigDoc => {
   const mergedOptions = mergeDocOptionsWithDefault(opts);
 
-  const { configSchema } = compileConfigSync(target, {
+  const { configSchema } = buildConfigSync(target, {
     throwOnValidatonError: false,
   });
 

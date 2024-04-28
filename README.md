@@ -2,8 +2,6 @@
 
 [![npm version](https://badge.fury.io/js/@monkee%2Fturbo-config.svg)](https://badge.fury.io/js/@monkee%2Fturbo-config)
 
-> :warning: package is under active development. minor versions may contain breaking changes
-
 Complete configuration solution for typescript codebases:
 
 ```typescript
@@ -49,9 +47,7 @@ class AppConfig {
     * [class-transformer](https://github.com/typestack/class-transformer) for type management
     * [yargs-parser](https://github.com/yargs/yargs-parser) for cli source
     * [dotenv](https://github.com/motdotla/dotenv) for envs parsing
-
-1. [NestJs module out the box](#nestjs-usage)
-1. Config documentation generator (WIP)
+1. Config documentation generator
 1. Well configurable
 
 ## Table of contents
@@ -63,7 +59,7 @@ class AppConfig {
 - [Advanced usage](#advanced-usage)
   - [Nested configs](#nested-configs)
   - [Array of non-primitive types](#array-of-non-primitive-types)
-  - [Compile options reference](#compile-options-reference)
+  - [Build options reference](#build-options-reference)
   - [Error handling](#error-handling)
   - [Documentation generator](#documentation-generator)
   - [NestJs usage](#nestjs-usage)
@@ -101,7 +97,7 @@ yarn add @monkee/turbo-config
 ```typescript
 import { Transform } from 'class-transformer';
 import { IsNumber } from 'class-validator';
-import { compileConfig, ConfigField } from '@monkee/turbo-config';
+import { buildConfig, ConfigField } from '@monkee/turbo-config';
 
 class AppConfig {
   /*
@@ -150,7 +146,7 @@ class AppConfig {
 }
 
 const main = async () => {
-  const { config } = await compileConfig(AppConfig, {
+  const { config } = await buildConfig(AppConfig, {
     ymlFiles: ['config.yml', 'override.yml'],
     topLevelPrefix: 'app',
   });
@@ -164,7 +160,7 @@ const main = async () => {
 ## Nested configs
 
 ```typescript
-import { compileConfig, ConfigField } from '@monkee/turbo-config';
+import { buildConfig, ConfigField } from '@monkee/turbo-config';
 
 class Nested {
   @ConfigField()
@@ -180,7 +176,7 @@ class AppConfig {
 }
 
 const main = async () => {
-  const { config } = await compileConfig(AppConfig);
+  const { config } = await buildConfig(AppConfig);
 
   console.log(config.nested);
 };
@@ -189,7 +185,7 @@ const main = async () => {
 ## Array of non-primitive types
 
 ```typescript
-import { compileConfig, ConfigField } from '@monkee/turbo-config';
+import { buildConfig, ConfigField } from '@monkee/turbo-config';
 
 class Repository {
   @ConfigField()
@@ -207,16 +203,16 @@ class AppConfig {
 const main = async () => {
   process.env.REPOSITORIES = 'url=first;token=someToken,url=second;token=secret';
 
-  const { config } = await compileConfig(AppConfig);
+  const { config } = await buildConfig(AppConfig);
 
   console.log(config.repositories);
 };
 ```
 
-## Compile options reference
+## Build options reference
 
 ```typescript
-// Default compile options
+// Default build options
 {
   sourcesPriority: [CONFIG_SOURCE.YAML, CONFIG_SOURCE.ENV, CONFIG_SOURCE.CLI],
   throwOnValidatonError: true,
@@ -233,34 +229,6 @@ const main = async () => {
     exposeDefaultValues: true,
   },
 }
-```
-
-## NestJs usage
-
-In general you need to register the configs globally
-
-```typescript
-import { TurboConfigModule } from '@monkee/turbo-config';
-
-@Module({
-  imports: [
-    TurboConfigModule.forRootAsync([AppConfig, AnotherConfig]),
-  ],
-})
-export class AppModule {}
-```
-
-There is also an option to register a scoped configs
-
-```typescript
-import { TurboConfigModule } from '@monkee/turbo-config';
-
-@Module({
-  imports: [
-    TurboConfigModule.registerAsync([DatabaseConfig, AnotherConfig]),
-  ],
-})
-export class DatabaseModule {}
 ```
 
 ## Error handling

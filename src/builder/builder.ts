@@ -5,7 +5,7 @@ import type { ValidationError } from 'class-validator';
 import { validateSync } from 'class-validator';
 import * as deepMerge from 'deepmerge';
 import * as dotenv from 'dotenv';
-import * as YAML from 'yaml';
+import * as yaml from 'yaml';
 import * as yargs from 'yargs-parser';
 import {
   getClassConfigPrefix,
@@ -17,11 +17,11 @@ import {
   getPropertyType,
   getPropertyYamlKey,
 } from '../decorators/metadata';
-import { TurboConfigCompileError, TurboConfigValidationErr } from '../errors';
+import { TurboConfigBuildError, TurboConfigValidationErr } from '../errors';
 import { getByKeyPath } from '../utils/get-by-key-path';
 import { isError, isNodeJsError } from '../utils/ts-type-guards';
-import type { CompileConfigOptions } from './compiler-options';
-import { mergeOptionsWithDefault } from './compiler-options';
+import type { BuildConfigOptions } from './builder-options';
+import { mergeOptionsWithDefault } from './builder-options';
 import { CONFIG_SOURCE } from './config-sources';
 import {
   createKeyFromSegments,
@@ -46,7 +46,7 @@ export type ConfigSchemaEntry = {
 
 export type ConfigSchema = Record<string, ConfigSchemaEntry>;
 
-export type CompileResult<T> = {
+export type BuildResult<T> = {
   config: T;
   configSchema: ConfigSchema;
   validationErrors: ValidationError[];
@@ -71,6 +71,7 @@ const getValueBySourcePriority = (
 };
 
 type ResolvedSources = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key in CONFIG_SOURCE]: any;
 };
 
@@ -82,7 +83,7 @@ type RawConfig = {
 const buildRawConfig = <T extends object>(
   target: new () => T,
   sources: ResolvedSources,
-  opts: CompileConfigOptions = {},
+  opts: BuildConfigOptions = {},
   nestedKeyPrefix?: string,
 ): RawConfig => {
   // eslint-disable-next-line new-cap
@@ -163,17 +164,17 @@ const buildRawConfig = <T extends object>(
   return { schema: configSchema, rawFields: rawConfig };
 };
 
-export const compileConfigSync = <T extends object>(
+export const buildConfigSync = <T extends object>(
   configClass: new () => T,
-  opts: CompileConfigOptions = {},
-): CompileResult<T> => {
+  opts: BuildConfigOptions = {},
+): BuildResult<T> => {
   const mergedOpts = mergeOptionsWithDefault(opts);
 
   let yamls: object[] = [];
   try {
     yamls = mergedOpts.ymlFiles!.map((filePath) => {
       const file = fs.readFileSync(filePath, 'utf-8');
-      return YAML.parse(file);
+      return yaml.parse(file);
     });
   } catch (e) {
     const shouldNotToThrow =
@@ -183,7 +184,7 @@ export const compileConfigSync = <T extends object>(
 
     if (!shouldNotToThrow) {
       if (isError(e)) {
-        throw new TurboConfigCompileError(e.message);
+        throw new TurboConfigBuildError(e.message);
       } else {
         throw e;
       }
@@ -206,7 +207,7 @@ export const compileConfigSync = <T extends object>(
 
       if (!shouldNotToThrow) {
         if (isError(e)) {
-          throw new TurboConfigCompileError(e.message);
+          throw new TurboConfigBuildError(e.message);
         } else {
           throw e;
         }
@@ -214,18 +215,18 @@ export const compileConfigSync = <T extends object>(
     }
   }
 
-  return compileConfigInternal(configClass, mergedOpts, yamls, envs);
+  return buildConfigInternal(configClass, mergedOpts, yamls, envs);
 };
 
-export const compileConfig = async <T extends object>(
+export const buildConfig = async <T extends object>(
   configClass: new () => T,
-  opts: CompileConfigOptions = {},
-): Promise<CompileResult<T>> => {
+  opts: BuildConfigOptions = {},
+): Promise<BuildResult<T>> => {
   const mergedOpts = mergeOptionsWithDefault(opts);
 
   const readYamlTasks = mergedOpts.ymlFiles!.map(async (filePath) => {
     const file = await readFile(filePath, 'utf-8');
-    return YAML.parse(file);
+    return yaml.parse(file);
   });
 
   let yamls = [] as object[];
@@ -239,7 +240,7 @@ export const compileConfig = async <T extends object>(
 
     if (!shouldNotToThrow) {
       if (isError(e)) {
-        throw new TurboConfigCompileError(e.message);
+        throw new TurboConfigBuildError(e.message);
       } else {
         throw e;
       }
@@ -264,7 +265,7 @@ export const compileConfig = async <T extends object>(
 
       if (!shouldNotToThrow) {
         if (isError(e)) {
-          throw new TurboConfigCompileError(e.message);
+          throw new TurboConfigBuildError(e.message);
         } else {
           throw e;
         }
@@ -272,15 +273,15 @@ export const compileConfig = async <T extends object>(
     }
   }
 
-  return compileConfigInternal(configClass, mergedOpts, yamls, envs);
+  return buildConfigInternal(configClass, mergedOpts, yamls, envs);
 };
 
-const compileConfigInternal = <T extends object>(
+const buildConfigInternal = <T extends object>(
   configClass: new () => T,
-  opts: CompileConfigOptions,
+  opts: BuildConfigOptions,
   yamls: object[],
   envs: Record<string, string>[],
-): CompileResult<T> => {
+): BuildResult<T> => {
   const mergedYaml = yamls.reduce((accum, value) => {
     return deepMerge(accum, value);
   }, {});

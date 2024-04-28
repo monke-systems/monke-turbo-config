@@ -1,10 +1,10 @@
-import { compileConfig } from '../src';
+import { buildConfig } from '../src';
 
 describe('Empty config (e2e)', () => {
   it('Should not throw on empty config', async () => {
     class Empty {}
 
-    await expect(compileConfig(Empty)).resolves.not.toThrow();
+    await expect(buildConfig(Empty)).resolves.not.toThrow();
   });
 
   it('Should return class instance without changes', async () => {
@@ -12,7 +12,7 @@ describe('Empty config (e2e)', () => {
       notConfigField = 123;
     }
 
-    const { config } = await compileConfig(WithField);
+    const { config } = await buildConfig(WithField);
 
     expect(config).toBeInstanceOf(WithField);
 

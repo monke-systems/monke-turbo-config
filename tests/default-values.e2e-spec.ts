@@ -1,4 +1,4 @@
-import { compileConfig, ConfigField, TurboConfigTransformerErr } from '../src';
+import { buildConfig, ConfigField, TurboConfigTransformerErr } from '../src';
 import { setEnvs } from './utils/test-utils';
 
 describe('Default values (e2e)', () => {
@@ -16,7 +16,7 @@ describe('Default values (e2e)', () => {
 
     setEnvs(['TASKS', 'opa,zhopa,loh']);
 
-    const { config } = await compileConfig(Conf);
+    const { config } = await buildConfig(Conf);
 
     const expected = new Conf();
     expected.tasks = ['opa', 'zhopa', 'loh'];
@@ -32,7 +32,7 @@ describe('Default values (e2e)', () => {
     }
 
     const fn = () =>
-      compileConfig(Conf, {
+      buildConfig(Conf, {
         classTransformerOptions: {
           exposeDefaultValues: false,
         },

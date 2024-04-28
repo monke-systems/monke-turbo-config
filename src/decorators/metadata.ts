@@ -1,5 +1,5 @@
 import type { ClassConstructor } from 'class-transformer';
-import { TurboConfigCompileError } from '../errors';
+import { TurboConfigBuildError } from '../errors';
 
 const turboConfigPropertiesSymbol = Symbol('turboConifgProperties');
 
@@ -74,11 +74,12 @@ export const getClassConfigPrefix = (target: object): string | undefined => {
   return Reflect.getMetadata(prefixSymbol, target);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getPropertyType = (target: object, propertyName: string): any => {
   const type = Reflect.getMetadata('design:type', target, propertyName);
 
   if (type === undefined) {
-    throw new TurboConfigCompileError(
+    throw new TurboConfigBuildError(
       `Can not detect ${propertyName} field type. Does you enabled "emitDecoratorMetadata" option in tsconfig?.
 Also make sure there is no circular dependencies.`,
     );

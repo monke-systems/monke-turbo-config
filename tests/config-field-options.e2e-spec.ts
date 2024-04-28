@@ -1,4 +1,4 @@
-import { compileConfig, ConfigField } from '../src';
+import { buildConfig, ConfigField } from '../src';
 import { setEnvs } from './utils/test-utils';
 
 describe('Config field decorator options (e2e)', () => {
@@ -13,7 +13,7 @@ describe('Config field decorator options (e2e)', () => {
 
     setEnvs(['TASKS', 'opa,zhopa,loh'], ['APP_PORT', 'not_number']);
 
-    const { config } = await compileConfig(Conf);
+    const { config } = await buildConfig(Conf);
 
     const expected = new Conf();
     // @ts-expect-error for this test case its necessary

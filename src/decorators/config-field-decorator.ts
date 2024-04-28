@@ -7,7 +7,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { TurboConfigCompileError } from '../errors';
+import { TurboConfigBuildError } from '../errors';
 import {
   ArrayOfClassesTransformer,
   ArrayOfFloatsTransformer,
@@ -134,7 +134,7 @@ export const ConfigField = (opts: ConfigFieldOptions = {}) => {
 
         if (type === Array) {
           if (opts.arrayOf === undefined) {
-            throw new TurboConfigCompileError(
+            throw new TurboConfigBuildError(
               `Property "${property}" has array type but no arrayOf option is passed`,
             );
           }
