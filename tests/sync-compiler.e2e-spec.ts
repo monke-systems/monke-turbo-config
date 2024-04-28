@@ -1,4 +1,4 @@
-import { compileConfigSync } from '../src';
+import { buildConfigSync } from '../src';
 import { E2E_YAMLS, getE2EYamlPath } from './utils/test-utils';
 
 describe('Sync compiler (e2e)', () => {
@@ -6,7 +6,7 @@ describe('Sync compiler (e2e)', () => {
     class Conf {}
 
     expect(() => {
-      return compileConfigSync(Conf, {
+      return buildConfigSync(Conf, {
         ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX)],
       });
     }).not.toThrow();

@@ -1,5 +1,5 @@
 import * as deepMerge from 'deepmerge';
-import { CONFIG_SOURCE } from '../compiler/config-sources';
+import { CONFIG_SOURCE } from '../builder/config-sources';
 
 export enum DOC_FORMAT {
   MARKDOWN = 'markdown',

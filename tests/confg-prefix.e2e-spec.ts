@@ -1,4 +1,4 @@
-import { compileConfig, ConfigField, ConfigPrefix } from '../src';
+import { buildConfig, ConfigField, ConfigPrefix } from '../src';
 import { E2E_YAMLS, getE2EYamlPath, setEnvs } from './utils/test-utils';
 
 describe('Config prefix (e2e)', () => {
@@ -9,7 +9,7 @@ describe('Config prefix (e2e)', () => {
       host!: string;
     }
 
-    const { config, configSchema } = await compileConfig(AppConfig, {
+    const { config, configSchema } = await buildConfig(AppConfig, {
       ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX)],
     });
 
@@ -32,7 +32,7 @@ describe('Config prefix (e2e)', () => {
       host!: string;
     }
 
-    const { config, configSchema } = await compileConfig(AppConfig, {
+    const { config, configSchema } = await buildConfig(AppConfig, {
       ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX)],
       topLevelPrefix: 'app',
     });
@@ -65,7 +65,7 @@ describe('Config prefix (e2e)', () => {
 
     setEnvs(['APP_NESTED_ANOTHER_PORT', '3000']);
 
-    const { config, configSchema } = await compileConfig(AppConfig);
+    const { config, configSchema } = await buildConfig(AppConfig);
 
     const expected = new AppConfig();
     const nested = new Nested();

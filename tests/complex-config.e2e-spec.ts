@@ -1,5 +1,5 @@
 import type { ConfigSchema } from '../src';
-import { CONFIG_SOURCE, compileConfig, ConfigField } from '../src';
+import { CONFIG_SOURCE, buildConfig, ConfigField } from '../src';
 import {
   E2E_ENV_FILES,
   E2E_YAMLS,
@@ -72,7 +72,7 @@ describe('Complex config positive scenario (e2e)', () => {
       '--repositoriesCli=url=https://gitpop.com/555;token=gitpopToken;',
     );
 
-    const { config, configSchema } = await compileConfig(ComplexConfig, {
+    const { config, configSchema } = await buildConfig(ComplexConfig, {
       sourcesPriority: [
         CONFIG_SOURCE.YAML,
         CONFIG_SOURCE.ENV,

@@ -1,4 +1,4 @@
-import { compileConfig, TurboConfigCompileError } from '../src';
+import { buildConfig, TurboConfigBuildError } from '../src';
 import {
   E2E_ENV_FILES,
   E2E_YAMLS,
@@ -11,7 +11,7 @@ describe('Error handling (e2e)', () => {
     class Conf {}
 
     const fn = () =>
-      compileConfig(Conf, {
+      buildConfig(Conf, {
         ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX), 'not_exist2'],
       });
 
@@ -22,30 +22,30 @@ describe('Error handling (e2e)', () => {
     class Conf {}
 
     const fn = () =>
-      compileConfig(Conf, {
+      buildConfig(Conf, {
         ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX), 'not_exist2'],
         throwIfYmlNotExist: true,
       });
 
-    await expect(fn()).rejects.toThrowError(TurboConfigCompileError);
+    await expect(fn()).rejects.toThrowError(TurboConfigBuildError);
   });
 
   it('Should throw an error if yaml file is invalid', async () => {
     class Conf {}
 
     const fn = () =>
-      compileConfig(Conf, {
+      buildConfig(Conf, {
         ymlFiles: [getE2EYamlPath(E2E_YAMLS.INVALID)],
       });
 
-    await expect(fn()).rejects.toThrowError(TurboConfigCompileError);
+    await expect(fn()).rejects.toThrowError(TurboConfigBuildError);
   });
 
   it('Should not throw an error if env file is not exists', async () => {
     class Conf {}
 
     const fn = () =>
-      compileConfig(Conf, {
+      buildConfig(Conf, {
         envFiles: [getE2EEnvFilePath(E2E_ENV_FILES.COMPLEX), 'not_exists'],
         loadEnvFiles: true,
       });

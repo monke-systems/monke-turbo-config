@@ -1,5 +1,4 @@
-import { compileConfig, ConfigField } from '../src';
-import { CONFIG_SOURCE } from '../src/compiler/config-sources';
+import { buildConfig, ConfigField, CONFIG_SOURCE } from '../src';
 import {
   E2E_ENV_FILES,
   E2E_YAMLS,
@@ -29,7 +28,7 @@ describe('Overriding (e2e)', () => {
     setEnvs(['TASKS', 'task1,task2']);
     setArgs('--host=hostFromCli');
 
-    const { config } = await compileConfig(Conf, {
+    const { config } = await buildConfig(Conf, {
       ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX)],
     });
 
@@ -50,7 +49,7 @@ describe('Overriding (e2e)', () => {
       mysqlAutoReconnect!: boolean;
     }
 
-    const { config } = await compileConfig(Conf, {
+    const { config } = await buildConfig(Conf, {
       ymlFiles: [
         getE2EYamlPath(E2E_YAMLS.COMPLEX),
         getE2EYamlPath(E2E_YAMLS.OVERRIDE),
@@ -78,7 +77,7 @@ describe('Overriding (e2e)', () => {
 
     setEnvs(['DB_REDIS_HOST', 'redis-555']);
 
-    const { config } = await compileConfig(Conf, {
+    const { config } = await buildConfig(Conf, {
       envFiles: [
         getE2EEnvFilePath(E2E_ENV_FILES.COMPLEX),
         getE2EEnvFilePath(E2E_ENV_FILES.OVERRIDE),
@@ -108,7 +107,7 @@ describe('Overriding (e2e)', () => {
       ['DB_MYSQL_AUTO_RECONNECT', 'false'],
     );
 
-    const { config } = await compileConfig(Conf, {
+    const { config } = await buildConfig(Conf, {
       sourcesPriority: [CONFIG_SOURCE.YAML, CONFIG_SOURCE.ENV],
       ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX)],
     });
@@ -134,7 +133,7 @@ describe('Overriding (e2e)', () => {
       ['DB_MYSQL_AUTORECONNECT', 'false'],
     );
 
-    const { config } = await compileConfig(Conf, {
+    const { config } = await buildConfig(Conf, {
       sourcesPriority: [CONFIG_SOURCE.ENV, CONFIG_SOURCE.YAML],
       ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX)],
     });
@@ -157,7 +156,7 @@ describe('Overriding (e2e)', () => {
 
     setArgs('--db.mysql.host=hostFromCli', '--db.mysql.autoReconnect=false');
 
-    const { config } = await compileConfig(Conf, {
+    const { config } = await buildConfig(Conf, {
       sourcesPriority: [CONFIG_SOURCE.YAML, CONFIG_SOURCE.CLI],
       ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX)],
     });

@@ -1,5 +1,5 @@
 import { IsHexColor, IsNumber, Min, ValidationError } from 'class-validator';
-import { compileConfig, ConfigField, TurboConfigValidationErr } from '../src';
+import { buildConfig, ConfigField, TurboConfigValidationErr } from '../src';
 import { setEnvs } from './utils/test-utils';
 
 describe('Validation spec (e2e)', () => {
@@ -13,7 +13,7 @@ describe('Validation spec (e2e)', () => {
 
     setEnvs(['APP_PORT', '-125125']);
 
-    await expect(compileConfig(Config)).rejects.toThrowError(
+    await expect(buildConfig(Config)).rejects.toThrowError(
       TurboConfigValidationErr,
     );
   });
@@ -28,12 +28,12 @@ describe('Validation spec (e2e)', () => {
     setEnvs(['COLOR', 'notHexColor']);
 
     await expect(
-      compileConfig(ColorConfig, {
+      buildConfig(ColorConfig, {
         throwOnValidatonError: false,
       }),
     ).resolves.not.toThrow();
 
-    const res = await compileConfig(ColorConfig, {
+    const res = await buildConfig(ColorConfig, {
       throwOnValidatonError: false,
     });
 

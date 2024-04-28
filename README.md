@@ -59,7 +59,7 @@ class AppConfig {
 - [Advanced usage](#advanced-usage)
   - [Nested configs](#nested-configs)
   - [Array of non-primitive types](#array-of-non-primitive-types)
-  - [Compile options reference](#compile-options-reference)
+  - [Build options reference](#build-options-reference)
   - [Error handling](#error-handling)
   - [Documentation generator](#documentation-generator)
   - [NestJs usage](#nestjs-usage)
@@ -97,7 +97,7 @@ yarn add @monkee/turbo-config
 ```typescript
 import { Transform } from 'class-transformer';
 import { IsNumber } from 'class-validator';
-import { compileConfig, ConfigField } from '@monkee/turbo-config';
+import { buildConfig, ConfigField } from '@monkee/turbo-config';
 
 class AppConfig {
   /*
@@ -146,7 +146,7 @@ class AppConfig {
 }
 
 const main = async () => {
-  const { config } = await compileConfig(AppConfig, {
+  const { config } = await buildConfig(AppConfig, {
     ymlFiles: ['config.yml', 'override.yml'],
     topLevelPrefix: 'app',
   });
@@ -160,7 +160,7 @@ const main = async () => {
 ## Nested configs
 
 ```typescript
-import { compileConfig, ConfigField } from '@monkee/turbo-config';
+import { buildConfig, ConfigField } from '@monkee/turbo-config';
 
 class Nested {
   @ConfigField()
@@ -176,7 +176,7 @@ class AppConfig {
 }
 
 const main = async () => {
-  const { config } = await compileConfig(AppConfig);
+  const { config } = await buildConfig(AppConfig);
 
   console.log(config.nested);
 };
@@ -185,7 +185,7 @@ const main = async () => {
 ## Array of non-primitive types
 
 ```typescript
-import { compileConfig, ConfigField } from '@monkee/turbo-config';
+import { buildConfig, ConfigField } from '@monkee/turbo-config';
 
 class Repository {
   @ConfigField()
@@ -203,16 +203,16 @@ class AppConfig {
 const main = async () => {
   process.env.REPOSITORIES = 'url=first;token=someToken,url=second;token=secret';
 
-  const { config } = await compileConfig(AppConfig);
+  const { config } = await buildConfig(AppConfig);
 
   console.log(config.repositories);
 };
 ```
 
-## Compile options reference
+## Build options reference
 
 ```typescript
-// Default compile options
+// Default build options
 {
   sourcesPriority: [CONFIG_SOURCE.YAML, CONFIG_SOURCE.ENV, CONFIG_SOURCE.CLI],
   throwOnValidatonError: true,
