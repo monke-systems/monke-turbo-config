@@ -170,38 +170,18 @@ export const buildConfigSync = <T extends object>(
 ): BuildResult<T> => {
   const mergedOpts = mergeOptionsWithDefault(opts);
 
-  let yamls: object[] = [];
-  try {
-    yamls = mergedOpts.ymlFiles!.map((filePath) => {
-      const file = fs.readFileSync(filePath, 'utf-8');
-      return yaml.parse(file);
-    });
-  } catch (e) {
-    const shouldNotToThrow =
-      !mergedOpts.throwIfYmlNotExist! &&
-      isNodeJsError(e) &&
-      e.code === 'ENOENT';
+  const yamls: object[] = [];
 
-    if (!shouldNotToThrow) {
-      if (isError(e)) {
-        throw new TurboConfigBuildError(e.message);
-      } else {
-        throw e;
-      }
-    }
-  }
-
-  let envs: Record<string, string>[] = [];
-
-  if (mergedOpts.loadEnvFiles!) {
+  for (const filePath of mergedOpts.ymlFiles!) {
     try {
-      envs = mergedOpts.envFiles!.map((filePath) => {
-        const file = fs.readFileSync(filePath, 'utf-8');
-        return dotenv.parse(file);
-      });
+      const file = fs.readFileSync(filePath, 'utf-8');
+
+      const parsed = yaml.parse(file);
+
+      yamls.push(parsed);
     } catch (e) {
       const shouldNotToThrow =
-        !mergedOpts.throwIfEnvFileNotExist! &&
+        !mergedOpts.throwIfYmlNotExist! &&
         isNodeJsError(e) &&
         e.code === 'ENOENT';
 
@@ -210,6 +190,31 @@ export const buildConfigSync = <T extends object>(
           throw new TurboConfigBuildError(e.message);
         } else {
           throw e;
+        }
+      }
+    }
+  }
+
+  const envs: Record<string, string>[] = [];
+
+  if (mergedOpts.loadEnvFiles!) {
+    for (const filePath of mergedOpts.envFiles!) {
+      try {
+        const file = fs.readFileSync(filePath, 'utf-8');
+        const parsed = dotenv.parse(file);
+        envs.push(parsed);
+      } catch (e) {
+        const shouldNotToThrow =
+          !mergedOpts.throwIfEnvFileNotExist! &&
+          isNodeJsError(e) &&
+          e.code === 'ENOENT';
+
+        if (!shouldNotToThrow) {
+          if (isError(e)) {
+            throw new TurboConfigBuildError(e.message);
+          } else {
+            throw e;
+          }
         }
       }
     }
@@ -224,42 +229,18 @@ export const buildConfig = async <T extends object>(
 ): Promise<BuildResult<T>> => {
   const mergedOpts = mergeOptionsWithDefault(opts);
 
-  const readYamlTasks = mergedOpts.ymlFiles!.map(async (filePath) => {
-    const file = await readFile(filePath, 'utf-8');
-    return yaml.parse(file);
-  });
+  const yamls: object[] = [];
 
-  let yamls = [] as object[];
-  try {
-    yamls = await Promise.all(readYamlTasks);
-  } catch (e) {
-    const shouldNotToThrow =
-      !mergedOpts.throwIfYmlNotExist! &&
-      isNodeJsError(e) &&
-      e.code === 'ENOENT';
-
-    if (!shouldNotToThrow) {
-      if (isError(e)) {
-        throw new TurboConfigBuildError(e.message);
-      } else {
-        throw e;
-      }
-    }
-  }
-
-  let envs: Record<string, string>[] = [];
-
-  if (mergedOpts.loadEnvFiles!) {
-    const readEnvsTasks = mergedOpts.envFiles!.map(async (filePath) => {
-      const file = await readFile(filePath, 'utf-8');
-      return dotenv.parse(file);
-    });
-
+  for (const filePath of mergedOpts.ymlFiles!) {
     try {
-      envs = await Promise.all(readEnvsTasks);
+      const file = await readFile(filePath, 'utf-8');
+
+      const parsed = yaml.parse(file);
+
+      yamls.push(parsed);
     } catch (e) {
       const shouldNotToThrow =
-        !mergedOpts.throwIfEnvFileNotExist! &&
+        !mergedOpts.throwIfYmlNotExist! &&
         isNodeJsError(e) &&
         e.code === 'ENOENT';
 
@@ -268,6 +249,31 @@ export const buildConfig = async <T extends object>(
           throw new TurboConfigBuildError(e.message);
         } else {
           throw e;
+        }
+      }
+    }
+  }
+
+  const envs: Record<string, string>[] = [];
+
+  if (mergedOpts.loadEnvFiles!) {
+    for (const filePath of mergedOpts.envFiles!) {
+      try {
+        const file = await readFile(filePath, 'utf-8');
+        const parsed = dotenv.parse(file);
+        envs.push(parsed);
+      } catch (e) {
+        const shouldNotToThrow =
+          !mergedOpts.throwIfEnvFileNotExist! &&
+          isNodeJsError(e) &&
+          e.code === 'ENOENT';
+
+        if (!shouldNotToThrow) {
+          if (isError(e)) {
+            throw new TurboConfigBuildError(e.message);
+          } else {
+            throw e;
+          }
         }
       }
     }

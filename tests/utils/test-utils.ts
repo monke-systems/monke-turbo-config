@@ -4,6 +4,7 @@ export enum E2E_YAMLS {
   COMPLEX = 'complex-config.yml',
   OVERRIDE = 'override-config.yml',
   INVALID = 'invalid-config.yml',
+  NOT_EXISTS = 'not-exists.yml',
 }
 
 export enum E2E_ENV_FILES {
