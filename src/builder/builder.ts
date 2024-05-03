@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { promisify } from 'util';
+import * as util from 'util';
 import { plainToInstance } from 'class-transformer';
 import type { ValidationError } from 'class-validator';
 import { validateSync } from 'class-validator';
@@ -321,7 +322,9 @@ const buildConfigInternal = <T extends object>(
 
   if (opts.throwOnValidatonError === true && errors.length !== 0) {
     throw new TurboConfigValidationErr(
-      `\n${errors.map((e) => e.toString()).join('\n')}`,
+      `\n${errors
+        .map((e) => `${e.toString()} Got value "${util.format(e.value)}"`)
+        .join('\n')}`,
     );
   }
 
