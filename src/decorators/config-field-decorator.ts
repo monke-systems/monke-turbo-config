@@ -4,6 +4,7 @@ import {
   IsArray,
   IsBoolean,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -16,7 +17,14 @@ import {
   BooleanTransformer,
   FloatTransformer,
 } from '../transform-helpers/common-transformers';
-import { CliKey, EnvKey, GenericKey, NestedKey, YamlKey } from './decorators';
+import {
+  CliKey,
+  ConfigFieldOptional,
+  EnvKey,
+  GenericKey,
+  NestedKey,
+  YamlKey,
+} from './decorators';
 import { getPropertyType } from './metadata';
 
 export type ArrayOfOptions =
@@ -35,6 +43,7 @@ export type ConfigFieldOptions = {
   cliKey?: string;
   nested?: boolean;
   nestedKey?: string;
+  optional?: boolean;
 };
 
 const primitiveReflectTypes = [
@@ -94,8 +103,18 @@ export const ConfigField = (opts: ConfigFieldOptions = {}) => {
   return (target: object, property: string) => {
     const decoratorsToApply: PropertyDecorator[] = [];
 
+    if (opts.optional === true && opts.nested === true) {
+      throw new TurboConfigBuildError(
+        `Property "${property}" cannot be both optional and nested`,
+      );
+    }
+
     // Define generic key
     decoratorsToApply.push(GenericKey(opts.genericKey ?? property));
+
+    if (opts.optional === true) {
+      decoratorsToApply.push(IsOptional(), ConfigFieldOptional());
+    }
 
     const type = getPropertyType(target, property);
 

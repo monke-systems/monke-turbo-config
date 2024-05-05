@@ -1,11 +1,11 @@
 import * as fs from 'fs';
 import { promisify } from 'util';
-import * as util from 'util';
 import { plainToInstance } from 'class-transformer';
 import type { ValidationError } from 'class-validator';
 import { validateSync } from 'class-validator';
 import * as deepMerge from 'deepmerge';
 import * as dotenv from 'dotenv';
+import type { JSONSchema7 } from 'json-schema';
 import * as yaml from 'yaml';
 import * as yargs from 'yargs-parser';
 import {
@@ -14,6 +14,7 @@ import {
   getPropertyCliKey,
   getPropertyEnvKey,
   getPropertyGenericKey,
+  getPropertyIsOptional,
   getPropertyNestedKey,
   getPropertyType,
   getPropertyYamlKey,
@@ -24,6 +25,7 @@ import { isError, isNodeJsError } from '../utils/ts-type-guards';
 import type { BuildConfigOptions } from './builder-options';
 import { mergeOptionsWithDefault } from './builder-options';
 import { CONFIG_SOURCE } from './config-sources';
+import { jsonSchemaTypeConvert } from './json-schema-type-convert';
 import {
   createKeyFromSegments,
   getConfigKeyByGenericKey,
@@ -35,21 +37,9 @@ type ValuesBySource = {
   [key in CONFIG_SOURCE]: unknown;
 };
 
-export type ConfigSchemaEntry = {
-  type?: unknown;
-  defaultValue?: unknown;
-  keys?: {
-    [key in CONFIG_SOURCE]: string;
-  };
-
-  children?: Record<string, ConfigSchemaEntry>;
-};
-
-export type ConfigSchema = Record<string, ConfigSchemaEntry>;
-
 export type BuildResult<T> = {
   config: T;
-  configSchema: ConfigSchema;
+  jsonSchema: JSONSchema7;
   validationErrors: ValidationError[];
 };
 
@@ -77,7 +67,7 @@ type ResolvedSources = {
 };
 
 type RawConfig = {
-  schema: ConfigSchema;
+  jsonSchema: JSONSchema7;
   rawFields: Record<string, unknown>;
 };
 
@@ -93,7 +83,26 @@ const buildRawConfig = <T extends object>(
   const configProperties = getPropertiesList(instance);
 
   const rawConfig: Record<string, unknown> = {};
-  const configSchema: ConfigSchema = {};
+
+  const jsonSchema: JSONSchema7 = {
+    type: 'object',
+    properties: {},
+    required: [],
+  };
+
+  let jsonSchemaToFill = jsonSchema;
+
+  if (classPrefix !== undefined) {
+    jsonSchema.properties![classPrefix] = {
+      type: 'object',
+      properties: {},
+      required: [],
+    };
+
+    jsonSchema.required = [classPrefix];
+
+    jsonSchemaToFill = jsonSchema.properties![classPrefix]! as JSONSchema7;
+  }
 
   for (const propertyName of configProperties) {
     const nestedKey = getPropertyNestedKey(instance, propertyName);
@@ -105,10 +114,19 @@ const buildRawConfig = <T extends object>(
         opts,
         createKeyFromSegments(nestedKeyPrefix, classPrefix, nestedKey.key),
       );
-      rawConfig[propertyName] = nested.rawFields;
-      configSchema[propertyName] = {
-        children: nested.schema,
+
+      if (nested.rawFields !== undefined) {
+        rawConfig[propertyName] = nested.rawFields;
+      }
+
+      jsonSchemaToFill.properties![propertyName] = {
+        type: 'object',
+        properties: nested.jsonSchema.properties,
+        required: nested.jsonSchema.required,
       };
+
+      jsonSchemaToFill.required!.push(propertyName);
+
       continue;
     }
 
@@ -150,19 +168,38 @@ const buildRawConfig = <T extends object>(
 
     rawConfig[propertyName] = prioritizedValue;
 
-    configSchema[propertyName] = {
-      type: getPropertyType(instance, propertyName),
-      // @ts-expect-error asdasd
-      defaultValue: instance[propertyName],
-      keys: {
+    jsonSchemaToFill.properties![propertyName] = {};
+
+    const valueType = getPropertyType(instance, propertyName);
+    const jsonSchemaType = jsonSchemaTypeConvert(valueType);
+
+    const schema: JSONSchema7 = {
+      type: jsonSchemaType,
+      // @ts-expect-error по спеке v7 разрешено добавлять любые поля
+      configKeys: {
         env: envKey,
         yaml: yamlKey,
         cli: cliKey,
       },
     };
+
+    const isOptional = getPropertyIsOptional(instance, propertyName);
+
+    // @ts-expect-error надо
+    if (!isOptional && instance[propertyName] === undefined) {
+      jsonSchemaToFill.required!.push(propertyName);
+    }
+
+    // @ts-expect-error надо
+    if (instance[propertyName] !== undefined) {
+      // @ts-expect-error надо
+      schema.default = instance[propertyName];
+    }
+
+    jsonSchemaToFill.properties![propertyName] = schema;
   }
 
-  return { schema: configSchema, rawFields: rawConfig };
+  return { jsonSchema, rawFields: rawConfig };
 };
 
 export const buildConfigSync = <T extends object>(
@@ -301,7 +338,7 @@ const buildConfigInternal = <T extends object>(
 
   const parsedArgs = yargs(process.argv.slice(2));
 
-  const { schema, rawFields } = buildRawConfig(
+  const { jsonSchema, rawFields } = buildRawConfig(
     configClass,
     {
       yaml: mergedYaml,
@@ -309,8 +346,9 @@ const buildConfigInternal = <T extends object>(
       cli: parsedArgs,
     },
     opts,
-    opts.topLevelPrefix,
   );
+
+  jsonSchema.$schema = 'http://json-schema.org/draft-07/schema#';
 
   const instanceOfConfig = plainToInstance(
     configClass,
@@ -320,17 +358,15 @@ const buildConfigInternal = <T extends object>(
 
   const errors = validateSync(instanceOfConfig, opts.classValidatorOptions);
 
-  if (opts.throwOnValidatonError === true && errors.length !== 0) {
+  if (opts.throwOnValidationError === true && errors.length !== 0) {
     throw new TurboConfigValidationErr(
-      `\n${errors
-        .map((e) => `${e.toString()} Got value "${util.format(e.value)}"`)
-        .join('\n')}`,
+      `\n${errors.map((e) => e.toString()).join('\n')}`,
     );
   }
 
   return {
     config: instanceOfConfig,
     validationErrors: errors,
-    configSchema: schema,
+    jsonSchema,
   };
 };

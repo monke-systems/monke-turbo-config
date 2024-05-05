@@ -5,12 +5,21 @@ import {
   envKeySymbol,
   genericKeySymbol,
   nestedKeySymbol,
+  optionalConfigFieldKey,
   yamlKeySymbol,
 } from './metadata';
 
 export const GenericKey = (key: string): PropertyDecorator => {
   return (target: object, property: string | symbol) => {
     Reflect.defineMetadata(genericKeySymbol, key, target, property);
+
+    addToPropertiesList(target, property.toString());
+  };
+};
+
+export const ConfigFieldOptional = (): PropertyDecorator => {
+  return (target: object, property: string | symbol) => {
+    Reflect.defineMetadata(optionalConfigFieldKey, true, target, property);
 
     addToPropertiesList(target, property.toString());
   };

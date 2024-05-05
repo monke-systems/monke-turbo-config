@@ -9,6 +9,7 @@ export const yamlKeySymbol = Symbol('turboConfigYamlKey');
 export const envKeySymbol = Symbol('turboConfigEnvKey');
 export const cliKeySymbol = Symbol('turboConfigCliKey');
 export const prefixSymbol = Symbol('turboConfigPrefix');
+export const optionalConfigFieldKey = Symbol('turboConfigOptional');
 
 export const addToPropertiesList = (target: object, propertyName: string) => {
   // get own fields from the target
@@ -72,6 +73,16 @@ export const getPropertyCliKey = (
 
 export const getClassConfigPrefix = (target: object): string | undefined => {
   return Reflect.getMetadata(prefixSymbol, target);
+};
+
+export const getPropertyIsOptional = (
+  target: object,
+  propertyName: string,
+): boolean => {
+  return (
+    Reflect.getMetadata(optionalConfigFieldKey, target, propertyName) !==
+    undefined
+  );
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

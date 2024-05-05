@@ -9,7 +9,7 @@ describe('Config prefix (e2e)', () => {
       host!: string;
     }
 
-    const { config, configSchema } = await buildConfig(AppConfig, {
+    const { config, jsonSchema } = await buildConfig(AppConfig, {
       ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX)],
     });
 
@@ -17,35 +17,25 @@ describe('Config prefix (e2e)', () => {
     expected.host = 'localhost';
 
     expect(config).toStrictEqual(expected);
-    expect(configSchema).toStrictEqual({
-      host: {
-        type: String,
-        defaultValue: undefined,
-        keys: { env: 'APP_HOST', yaml: 'app.host', cli: 'app.host' },
-      },
-    });
-  });
-
-  it('Toplevel prefix option', async () => {
-    class AppConfig {
-      @ConfigField()
-      host!: string;
-    }
-
-    const { config, configSchema } = await buildConfig(AppConfig, {
-      ymlFiles: [getE2EYamlPath(E2E_YAMLS.COMPLEX)],
-      topLevelPrefix: 'app',
-    });
-
-    const expected = new AppConfig();
-    expected.host = 'localhost';
-
-    expect(config).toStrictEqual(expected);
-    expect(configSchema).toStrictEqual({
-      host: {
-        type: String,
-        defaultValue: undefined,
-        keys: { env: 'APP_HOST', yaml: 'app.host', cli: 'app.host' },
+    expect(jsonSchema).toStrictEqual({
+      $schema: 'http://json-schema.org/draft-07/schema#',
+      type: 'object',
+      required: ['app'],
+      properties: {
+        app: {
+          type: 'object',
+          required: ['host'],
+          properties: {
+            host: {
+              type: 'string',
+              configKeys: {
+                cli: 'app.host',
+                env: 'APP_HOST',
+                yaml: 'app.host',
+              },
+            },
+          },
+        },
       },
     });
   });
@@ -65,7 +55,7 @@ describe('Config prefix (e2e)', () => {
 
     setEnvs(['APP_NESTED_ANOTHER_PORT', '3000']);
 
-    const { config, configSchema } = await buildConfig(AppConfig);
+    const { config, jsonSchema } = await buildConfig(AppConfig);
 
     const expected = new AppConfig();
     const nested = new Nested();
@@ -73,16 +63,34 @@ describe('Config prefix (e2e)', () => {
     expected.nested = nested;
 
     expect(config).toStrictEqual(expected);
-    expect(configSchema).toStrictEqual({
-      nested: {
-        children: {
-          port: {
-            type: Number,
-            defaultValue: undefined,
-            keys: {
-              env: 'APP_NESTED_ANOTHER_PORT',
-              yaml: 'app.nested.another.port',
-              cli: 'app.nested.another.port',
+    expect(jsonSchema).toStrictEqual({
+      $schema: 'http://json-schema.org/draft-07/schema#',
+      type: 'object',
+      required: ['app'],
+      properties: {
+        app: {
+          type: 'object',
+          required: ['nested'],
+          properties: {
+            nested: {
+              type: 'object',
+              required: ['another'],
+              properties: {
+                another: {
+                  type: 'object',
+                  required: ['port'],
+                  properties: {
+                    port: {
+                      type: 'number',
+                      configKeys: {
+                        cli: 'app.nested.another.port',
+                        env: 'APP_NESTED_ANOTHER_PORT',
+                        yaml: 'app.nested.another.port',
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },

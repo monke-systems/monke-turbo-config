@@ -1,76 +1,94 @@
-import { writeFileSync } from 'fs';
+import { writeFile } from 'fs/promises';
 import * as path from 'path';
-import type { ConfigSchema } from '../builder/builder';
-import { buildConfigSync } from '../builder/builder';
-import { CONFIG_SOURCE } from '../builder/config-sources';
+import type { JSONSchema7 } from 'json-schema';
+import { stringify } from 'yaml';
 import type { GenerateConfigDocOptions } from './doc-generator-options';
 import { mergeDocOptionsWithDefault } from './doc-generator-options';
 
-const typeToStringMap = new Map();
-typeToStringMap.set(String, 'string');
-typeToStringMap.set(Number, 'number');
-typeToStringMap.set(Boolean, 'boolean');
-typeToStringMap.set(Array, 'array');
-
 export type TurboConfigDoc = {
-  doc: string;
+  docText: string;
 };
 
-const generateMdDoc = (
-  schema: ConfigSchema,
-  opts: GenerateConfigDocOptions,
-) => {
-  let doc = '';
-
-  for (const [, propertySchema] of Object.entries(schema)) {
-    if (
-      propertySchema.children !== undefined &&
-      Object.keys(propertySchema.children).length > 0
-    ) {
-      doc += generateMdDoc(propertySchema.children, opts);
-    } else if (propertySchema.keys !== undefined) {
-      const key = `${opts.keysType === CONFIG_SOURCE.CLI ? '--' : ''}${
-        propertySchema.keys[opts.keysType!]
-      }`;
-
-      doc += `**${key}**: ${
-        typeToStringMap.get(propertySchema.type) ?? 'unknown type'
-      };`;
-
-      doc +=
-        propertySchema.defaultValue !== undefined
-          ? ` *default ${propertySchema.defaultValue}*`
-          : ` *required*`;
-
-      doc += '\n\n';
-    }
-  }
-
-  return doc;
-};
-
-export const generateConfigDoc = <T extends object>(
-  target: new () => T,
+export const generateConfigDoc = async (
+  schema: JSONSchema7,
   opts: GenerateConfigDocOptions = {},
-): TurboConfigDoc => {
+): Promise<TurboConfigDoc> => {
   const mergedOptions = mergeDocOptionsWithDefault(opts);
 
-  const { configSchema } = buildConfigSync(target, {
-    throwOnValidatonError: false,
-  });
-
-  const md = generateMdDoc(configSchema, mergedOptions);
-  const complete = `# ${mergedOptions.title!}\n\n${md}`;
+  const docText = generateDoc(schema, mergedOptions.title!);
 
   if (mergedOptions.writeToFile !== undefined) {
     const fullFilePath = path.resolve(mergedOptions.writeToFile);
 
-    writeFileSync(fullFilePath, complete, 'utf-8');
-
-    console.log(`Generated doc file "${fullFilePath}"`);
+    await writeFile(fullFilePath, docText, 'utf-8');
   }
 
   return {
-    doc: complete,
+    docText,
   };
+};
+
+const generateDoc = (schema: JSONSchema7, title: string): string => {
+  const example = generateExampleFromSchema(schema);
+  const ymlDoc = stringify(example);
+
+  const envs = collectEnvs(schema);
+
+  return `# ${title}
+
+## Yaml reference
+
+\`\`\`yaml\n${ymlDoc}\n\`\`\`
+
+## Env variables reference
+
+${envs.join('\n\n')}
+`;
+};
+
+const collectEnvs = (schema: JSONSchema7): string[] => {
+  const envs: string[] = [];
+
+  if (schema.type === 'object') {
+    for (const key in schema.properties) {
+      const innerSchema = schema.properties[key] as JSONSchema7;
+      if ('configKeys' in innerSchema) {
+        // @ts-expect-error выше чекнул
+        const envKey = innerSchema.configKeys.env;
+
+        envs.push(`${envKey}=${innerSchema.default ?? innerSchema.type}`);
+      }
+      envs.push(...collectEnvs(innerSchema));
+    }
+  }
+
+  return envs;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const generateExampleFromSchema = (schema: JSONSchema7): any => {
+  if (schema.type === 'object') {
+    const obj: Record<string, unknown> = {};
+
+    for (const key in schema.properties) {
+      obj[key] = generateExampleFromSchema(
+        schema.properties[key] as JSONSchema7,
+      );
+    }
+
+    return obj;
+  }
+
+  switch (schema.type) {
+    case 'array':
+      return schema.default ?? [];
+    case 'string':
+      return schema.default ?? 'stringVal';
+    case 'number':
+      return schema.default ?? 98765;
+    case 'boolean':
+      return schema.default ?? true;
+    default:
+      return null;
+  }
 };

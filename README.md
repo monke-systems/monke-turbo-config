@@ -2,9 +2,42 @@
 
 [![npm version](https://badge.fury.io/js/@monkee%2Fturbo-config.svg)](https://badge.fury.io/js/@monkee%2Fturbo-config)
 
-Complete configuration solution for typescript codebases:
+Complete configuration solution for typescript codebases.
+
+## Main features
+
+1. **Yaml, env, cli** config sources with priority configuration and overriding
+1. Typed, class-based
+1. JSON schema generation for yaml autocompletion and validation in editors and IDEs
+1. Documentation generator for yaml and env variables
+1. Built on the top of the mature community driven libraries:
+  * [class-validator](https://github.com/typestack/class-validator) as validation solution
+  * [class-transformer](https://github.com/typestack/class-transformer) for type management
+  * [dotenv](https://github.com/motdotla/dotenv) for envs parsing
+
+## Example
 
 ```typescript
+@ConfigPrefix('app')
+class AppConfig {
+  // Simple field
+  @ConfigField({ optional: true })
+  httpPort?: number;
+
+  // Nested config
+  @ConfigField({ nested: true })
+  db!: DbConfig;
+
+  // Sources overriding. Arrays support
+  @ConfigField({
+    arrayOf: 'strings',
+    yamlKey: 'services.manager.tasks',
+    cliKey: 'servicesList',
+    arraySeparator: ':',
+  })
+  tasks!: string[];
+}
+
 class DbConfig {
   @ConfigField()
   host!: string;
@@ -15,40 +48,7 @@ class DbConfig {
   @ConfigField()
   autoReconnect = true;
 }
-
-@ConfigPrefix('app')
-class AppConfig {
-  @ConfigField({ nested: true })
-  db!: DbConfig;
-
-  // Complex field
-  @ConfigField()
-  @Transform(({ value }) => moment(value), { toClassOnly: true })
-  date!: Moment;
-
-  // Sources overriding
-  @ConfigField({
-    arrayOf: 'strings',
-    yamlKey: 'services.manager.tasks',
-    cliKey: 'servicesList',
-    arraySeparator: ':',
-  })
-  tasks!: string[];
-}
-
 ```
-
-# Main features
-
-1. **Yaml, env, cli** config sources with priority configuration
-1. Typed, class-based
-1. Built on the top of the mature community driven libraries:
-    * [class-validator](https://github.com/typestack/class-validator) as validation solution
-    * [class-transformer](https://github.com/typestack/class-transformer) for type management
-    * [yargs-parser](https://github.com/yargs/yargs-parser) for cli source
-    * [dotenv](https://github.com/motdotla/dotenv) for envs parsing
-1. Config documentation generator
-1. Well configurable
 
 ## Table of contents
 
@@ -56,13 +56,12 @@ class AppConfig {
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Basic usage](#basic-usage)
+  - [Documentation and json schema generation](#documentation-and-json-schema-generators)
 - [Advanced usage](#advanced-usage)
   - [Nested configs](#nested-configs)
   - [Array of non-primitive types](#array-of-non-primitive-types)
   - [Build options reference](#build-options-reference)
   - [Error handling](#error-handling)
-  - [Documentation generator](#documentation-generator)
-  - [NestJs usage](#nestjs-usage)
 - [Authors](#authors)
 
 # Getting Started
@@ -84,12 +83,6 @@ Install via npm
 
 ```sh
 npm i @monkee/turbo-config
-```
-
-Yarn:
-
-```sh
-yarn add @monkee/turbo-config
 ```
 
 ## Basic usage
@@ -140,7 +133,7 @@ class AppConfig {
   })
   appHost!: string;
 
-  // Array example
+  // Array example. Due to reflection limitation you should specify type
   @ConfigField({ arrayOf: 'ints' })
   intsArray: number[] = [1, 2, 3];
 }
@@ -148,12 +141,48 @@ class AppConfig {
 const main = async () => {
   const { config } = await buildConfig(AppConfig, {
     ymlFiles: ['config.yml', 'override.yml'],
-    topLevelPrefix: 'app',
   });
 
   console.log(config);
 };
 ```
+
+## Documentation and json schema generators
+
+```typescript
+import { generateConfigDoc, ConfigPrefix, ConfigField } from '@monkee/turbo-config';
+import * as fs from 'fs/promises';
+
+@ConfigPrefix('nest')
+class AppConfig {
+  @ConfigField()
+  port!: number;
+}
+
+const main = async () => {
+  const { jsonSchema } = await buildConfig(AppConfig);
+
+  // save config reference to file
+  await generateConfigDoc(jsonSchema, {
+    // you can also use return value of generateConfigDoc to manually write file
+    writeToFile: 'CONFIG_REFERENCE.md',
+  });
+
+  // write json schema to file
+  fs.writeFile('config-schema.json', JSON.stringify(jsonSchema, null, 2), 'utf-8');
+};
+
+```
+
+In your yml config file you can include generated json schema. Supported in VSCode and IDEA (Webstorm).
+
+```yaml
+# yaml-language-server: $schema=config-schema.json
+
+nest:
+  port: 3000
+```
+
 
 # Advanced usage
 
@@ -215,13 +244,12 @@ const main = async () => {
 // Default build options
 {
   sourcesPriority: [CONFIG_SOURCE.YAML, CONFIG_SOURCE.ENV, CONFIG_SOURCE.CLI],
-  throwOnValidatonError: true,
+  throwOnValidationError: true,
   throwIfYmlNotExist: false,
   throwIfEnvFileNotExist: false,
   ymlFiles: [],
   envFiles: [],
   loadEnvFiles: false,
-  topLevelPrefix: undefined;
   classValidatorOptions: {
     skipMissingProperties: false,
   },
@@ -233,22 +261,15 @@ const main = async () => {
 
 ## Error handling
 
-WIP
-
-## Documentation generator
-
 ```typescript
-import { generateConfigDoc, CONFIG_SOURCE } from '@monkee/turbo-config';
+const main = async () => {
+  // manually handle validation errors
+  const { config, validationErrors } = await buildConfig(AppConfig, {
+    throwOnValidationError: false,
+  });
 
-class AppConfig {
-  // ...
-}
-
-generateConfigDoc(AppConfig, {
-  title: 'Some app doc',
-  writeToFile: 'CONFIG_REFERENCE.md',
-  keysType: CONFIG_SOURCE.ENV,
-});
+  throw new Error(validationErrors);
+};
 ```
 
 # Authors

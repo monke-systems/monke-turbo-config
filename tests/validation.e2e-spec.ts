@@ -29,12 +29,12 @@ describe('Validation spec (e2e)', () => {
 
     await expect(
       buildConfig(ColorConfig, {
-        throwOnValidatonError: false,
+        throwOnValidationError: false,
       }),
     ).resolves.not.toThrow();
 
     const res = await buildConfig(ColorConfig, {
-      throwOnValidatonError: false,
+      throwOnValidationError: false,
     });
 
     expect(Array.isArray(res.validationErrors)).toBe(true);

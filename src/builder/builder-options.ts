@@ -8,8 +8,7 @@ export type BuildConfigOptions = {
   ymlFiles?: string[];
   envFiles?: string[];
   loadEnvFiles?: boolean;
-  topLevelPrefix?: string;
-  throwOnValidatonError?: boolean;
+  throwOnValidationError?: boolean;
   throwIfYmlNotExist?: boolean;
   throwIfEnvFileNotExist?: boolean;
   classValidatorOptions?: ValidatorOptions;
@@ -18,10 +17,9 @@ export type BuildConfigOptions = {
 
 export const defaultBuildConfigOpts: BuildConfigOptions = {
   sourcesPriority: [CONFIG_SOURCE.YAML, CONFIG_SOURCE.ENV, CONFIG_SOURCE.CLI],
-  throwOnValidatonError: true,
+  throwOnValidationError: true,
   throwIfYmlNotExist: false,
   throwIfEnvFileNotExist: false,
-  topLevelPrefix: undefined,
   ymlFiles: [],
   envFiles: [],
   loadEnvFiles: false,

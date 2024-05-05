@@ -2,6 +2,7 @@ import * as path from 'path';
 
 export enum E2E_YAMLS {
   COMPLEX = 'complex-config.yml',
+  COMPLEX_PREFIXED = 'complex-prefixed.yml',
   OVERRIDE = 'override-config.yml',
   INVALID = 'invalid-config.yml',
   NOT_EXISTS = 'not-exists.yml',

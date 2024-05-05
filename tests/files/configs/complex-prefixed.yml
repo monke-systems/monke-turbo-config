@@ -1,0 +1,21 @@
+nest:
+  app:
+    port: 5000
+    host: localhost
+    cache:
+      ttlSec: 15
+  db:
+    mysql:
+      host: localhost
+      autoReconnect: true
+  tasks:
+    - opa
+    - zhopa
+    - loh
+  intsArray:
+    - 1
+    - 2
+    - 3
+  repositories:
+    - url: https://gitlab.com/123
+      token: secretToken

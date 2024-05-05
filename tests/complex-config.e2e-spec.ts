@@ -1,5 +1,4 @@
-import type { ConfigSchema } from '../src';
-import { CONFIG_SOURCE, buildConfig, ConfigField } from '../src';
+import { buildConfig, CONFIG_SOURCE, ConfigField } from '../src';
 import {
   E2E_ENV_FILES,
   E2E_YAMLS,
@@ -28,6 +27,9 @@ describe('Complex config positive scenario (e2e)', () => {
 
       @ConfigField()
       autoReconnect!: boolean;
+
+      @ConfigField({ optional: true })
+      optionalField?: string;
     }
 
     class ComplexConfig {
@@ -72,7 +74,7 @@ describe('Complex config positive scenario (e2e)', () => {
       '--repositoriesCli=url=https://gitpop.com/555;token=gitpopToken;',
     );
 
-    const { config, configSchema } = await buildConfig(ComplexConfig, {
+    const { config } = await buildConfig(ComplexConfig, {
       sourcesPriority: [
         CONFIG_SOURCE.YAML,
         CONFIG_SOURCE.ENV,
@@ -90,6 +92,7 @@ describe('Complex config positive scenario (e2e)', () => {
     expected.dbMysql = new Nested();
     expected.dbMysql.autoReconnect = true;
     expected.dbMysql.host = 'notLocalhost';
+    expected.dbMysql.optionalField = undefined;
 
     const repository1 = new Repository();
     repository1.url = 'https://gitlab.com/123';
@@ -116,92 +119,5 @@ describe('Complex config positive scenario (e2e)', () => {
     expected.arrFromArgs = [1, 6, 10];
 
     expect(config).toStrictEqual(expected);
-
-    const expectedConfigSchema: ConfigSchema = {
-      dbMysql: {
-        children: {
-          host: {
-            type: String,
-            defaultValue: undefined,
-            keys: {
-              env: 'DB_MYSQL_HOST',
-              yaml: 'db.mysql.host',
-              cli: 'db.mysql.host',
-            },
-          },
-          autoReconnect: {
-            type: Boolean,
-            defaultValue: undefined,
-            keys: {
-              env: 'DB_MYSQL_AUTO_RECONNECT',
-              yaml: 'db.mysql.autoReconnect',
-              cli: 'db.mysql.autoReconnect',
-            },
-          },
-        },
-      },
-      appPort: {
-        type: Number,
-        defaultValue: 8989,
-        keys: {
-          env: 'APP_PORT_MISTAKE_USE_DEFAULT',
-          yaml: 'app.port_mistake_use_default',
-          cli: 'app.port_mistake_use_default',
-        },
-      },
-      appHost: {
-        type: String,
-        defaultValue: undefined,
-        keys: { env: 'APP_HOST', yaml: 'app.host', cli: 'app.host' },
-      },
-      tasks: {
-        type: Array,
-        defaultValue: undefined,
-        keys: { env: 'TASKS', yaml: 'tasks', cli: 'tasks' },
-      },
-      intsArr: {
-        type: Array,
-        defaultValue: undefined,
-        keys: { env: 'INTS_ARR', yaml: 'intsArray', cli: 'intsArr' },
-      },
-      repositories: {
-        type: Array,
-        defaultValue: undefined,
-        keys: {
-          env: 'REPOSITORIES',
-          yaml: 'repositories',
-          cli: 'repositories',
-        },
-      },
-      repositoriesEnvs: {
-        type: Array,
-        defaultValue: undefined,
-        keys: {
-          env: 'REPOSITORIES_ENVS',
-          yaml: 'repositoriesEnvs',
-          cli: 'repositoriesEnvs',
-        },
-      },
-      repositoriesCli: {
-        type: Array,
-        defaultValue: undefined,
-        keys: {
-          env: 'REPOSITORIES_CLI',
-          yaml: 'repositoriesCli',
-          cli: 'repositoriesCli',
-        },
-      },
-      arrFromArgs: {
-        type: Array,
-        defaultValue: undefined,
-        keys: {
-          env: 'ARR_FROM_ARGS',
-          yaml: 'arrFromArgs',
-          cli: 'some.arrayOfInts',
-        },
-      },
-    };
-
-    expect(configSchema).toStrictEqual(expectedConfigSchema);
   });
 });
